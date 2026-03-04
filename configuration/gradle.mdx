@@ -1,0 +1,273 @@
+---
+title: 'Gradle Configuration'
+description: 'Complete guide to Gradle setup and configuration in TechSales Android'
+---
+
+## Overview
+
+TechSales uses Gradle with Kotlin DSL for build configuration. The project follows modern Android build practices with centralized dependency management through version catalogs.
+
+## Project Structure
+
+The Gradle configuration is split across multiple files:
+
+- `build.gradle.kts` - Root project configuration
+- `app/build.gradle.kts` - Application module configuration
+- `settings.gradle.kts` - Project settings and repository configuration
+- `gradle/libs.versions.toml` - Version catalog for centralized dependency management
+- `gradle.properties` - Gradle and Android build properties
+
+## Root Build Configuration
+
+The root `build.gradle.kts` file contains configuration common to all sub-projects:
+
+```kotlin build.gradle.kts
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    alias(libs.plugins.android.application) apply false
+}
+```
+
+<Note>
+The `apply false` syntax means the plugin is declared but not applied at the root level. It will be applied in the app module.
+</Note>
+
+### Key Features
+
+<ParamField path="plugins" type="PluginDependenciesSpec">
+  Declares plugins using the version catalog (`libs.plugins`). This approach centralizes plugin versions in `libs.versions.toml`.
+</ParamField>
+
+<ParamField path="apply" type="boolean" default="true">
+  Set to `false` in root build file to declare plugins without applying them. Sub-modules can then apply the plugin without specifying versions.
+</ParamField>
+
+## Settings Configuration
+
+The `settings.gradle.kts` file configures repository locations and project structure:
+
+```kotlin settings.gradle.kts
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "TechSales"
+include(":app")
+```
+
+### Plugin Management
+
+<ParamField path="pluginManagement.repositories" type="RepositoryHandler">
+  Defines where Gradle should look for plugins. Order matters - repositories are searched sequentially.
+</ParamField>
+
+**Repository Priority:**
+1. **Google Maven** - Filtered to only include Android, Google, and AndroidX packages
+2. **Maven Central** - General purpose repository
+3. **Gradle Plugin Portal** - Official Gradle plugins
+
+### Dependency Resolution
+
+<ParamField path="dependencyResolutionManagement.repositoriesMode" type="RepositoriesMode">
+  Set to `FAIL_ON_PROJECT_REPOS` to enforce centralized repository management. Prevents modules from declaring their own repositories.
+</ParamField>
+
+<Warning>
+With `FAIL_ON_PROJECT_REPOS` enabled, you cannot add repositories in module-level build files. All repositories must be declared in `settings.gradle.kts`.
+</Warning>
+
+### Project Structure
+
+<ParamField path="rootProject.name" type="String">
+  The name of the root project, displayed in Android Studio and used in various build outputs.
+</ParamField>
+
+<ParamField path="include" type="String...">
+  Declares which modules are part of the project. TechSales includes the `:app` module.
+</ParamField>
+
+## Gradle Properties
+
+The `gradle.properties` file contains build-wide configuration:
+
+```properties gradle.properties
+# JVM memory settings for Gradle daemon
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+
+# Use AndroidX libraries
+android.useAndroidX=true
+
+# Enable non-transitive R classes
+android.nonTransitiveRClass=true
+```
+
+### Performance Settings
+
+<ParamField path="org.gradle.jvmargs" type="String">
+  JVM arguments for the Gradle daemon. Allocates 2GB of heap memory and sets UTF-8 encoding.
+</ParamField>
+
+<Note>
+If you experience out-of-memory errors during builds, increase the `-Xmx` value (e.g., `-Xmx4096m` for 4GB).
+</Note>
+
+### Android Settings
+
+<ParamField path="android.useAndroidX" type="boolean" default="false">
+  Enables AndroidX libraries instead of legacy support libraries. Should always be `true` for modern projects.
+</ParamField>
+
+<ParamField path="android.nonTransitiveRClass" type="boolean" default="false">
+  Optimizes R class generation. Each library's R class only contains its own resources, reducing APK size.
+</ParamField>
+
+## Version Catalog
+
+The version catalog (`gradle/libs.versions.toml`) centralizes dependency versions:
+
+```toml gradle/libs.versions.toml
+[versions]
+agp = "9.0.1"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+appcompat = "1.6.1"
+material = "1.10.0"
+activity = "1.8.0"
+constraintlayout = "2.1.4"
+
+[libraries]
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+```
+
+### Benefits of Version Catalogs
+
+- **Centralized Version Management** - Update versions in one place
+- **Type-Safe Accessors** - Use `libs.appcompat` instead of string literals
+- **IDE Support** - Auto-completion and version checking
+- **Consistency** - Ensures all modules use the same versions
+
+<Note>
+Version catalogs are accessed using the `libs` prefix in build files: `libs.plugins.android.application`, `libs.appcompat`, etc.
+</Note>
+
+## Adding Custom Repositories
+
+To add a custom repository (e.g., for a private package):
+
+```kotlin settings.gradle.kts
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // Add custom repository
+        maven {
+            url = uri("https://your-repo.example.com/maven")
+            credentials {
+                username = providers.gradleProperty("repoUsername").orNull
+                password = providers.gradleProperty("repoPassword").orNull
+            }
+        }
+    }
+}
+```
+
+<Warning>
+Never commit credentials directly. Use `gradle.properties` (added to `.gitignore`) or environment variables for sensitive data.
+</Warning>
+
+## Gradle Wrapper
+
+TechSales uses the Gradle Wrapper to ensure consistent builds across environments:
+
+- `gradlew` (Unix/Mac) - Wrapper script for Unix-based systems
+- `gradlew.bat` (Windows) - Wrapper script for Windows
+- `gradle/wrapper/gradle-wrapper.properties` - Wrapper configuration
+
+### Using the Wrapper
+
+```bash
+# Build the app
+./gradlew build
+
+# Install debug build
+./gradlew installDebug
+
+# Run tests
+./gradlew test
+```
+
+<Note>
+Always use `./gradlew` instead of `gradle` to ensure everyone uses the same Gradle version.
+</Note>
+
+## Common Tasks
+
+### Updating Gradle
+
+```bash
+# Update to latest Gradle version
+./gradlew wrapper --gradle-version=8.5
+```
+
+### Viewing Dependencies
+
+```bash
+# View all dependencies
+./gradlew :app:dependencies
+
+# View only runtime dependencies
+./gradlew :app:dependencies --configuration releaseRuntimeClasspath
+```
+
+### Cleaning Build
+
+```bash
+# Clean all build outputs
+./gradlew clean
+```
+
+## Best Practices
+
+1. **Use Version Catalogs** - Centralize dependency versions in `libs.versions.toml`
+2. **Kotlin DSL** - Prefer `.kts` files for type safety and IDE support
+3. **Centralize Repositories** - Define all repositories in `settings.gradle.kts`
+4. **Use Gradle Wrapper** - Ensures consistent builds across machines
+5. **Optimize Memory** - Adjust `org.gradle.jvmargs` based on your machine's capacity
+6. **Enable Build Cache** - Add `org.gradle.caching=true` to `gradle.properties` for faster builds
+
+## Related Documentation
+
+- [Dependencies Configuration](/configuration/dependencies) - Managing project dependencies
+- [Build Types](/configuration/build-types) - Debug and release configurations
+- [Project Structure](/development/project-structure) - Application module structure

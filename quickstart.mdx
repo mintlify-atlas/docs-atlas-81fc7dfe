@@ -1,80 +1,216 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick start
+description: Get TechSales Android up and running in minutes
 ---
 
-## Get started in three steps
+## Get started quickly
 
-Get your documentation site running locally and make your first customization.
+This guide will help you clone, build, and run the TechSales Android application on your development machine in just a few minutes.
 
-### Step 1: Set up your local environment
+## Prerequisites
+
+Before you begin, make sure you have the following installed:
+
+- **Android Studio** Hedgehog (2023.1.1) or later
+- **Java Development Kit (JDK)** 11 or higher
+- **Android SDK** with API level 29 or higher
+- **Git** for cloning the repository
+
+<Note>
+  TechSales requires a minimum SDK version of 29 (Android 10) and targets SDK 36. Make sure you have the appropriate SDK platforms installed in Android Studio.
+</Note>
+
+## Setup steps
+
+<Steps>
+  <Step title="Clone the repository">
+    Open your terminal and clone the TechSales repository:
+    
+    ```bash
+    git clone <repository-url>
+    cd TechSales
+    ```
+    
+    Replace `<repository-url>` with the actual repository URL for your TechSales project.
+  </Step>
+
+  <Step title="Open in Android Studio">
+    Launch Android Studio and select **Open an Existing Project**. Navigate to the cloned `TechSales` directory and click **OK**.
+    
+    Android Studio will automatically detect the project structure and begin syncing Gradle files.
+  </Step>
+
+  <Step title="Wait for Gradle sync">
+    Android Studio will automatically sync the project dependencies. This may take a few minutes on the first run as it downloads:
+    
+    - Android Gradle Plugin 9.0.1
+    - AndroidX AppCompat 1.6.1
+    - Material Components 1.10.0
+    - AndroidX Activity 1.8.0
+    - ConstraintLayout 2.1.4
+    - Testing libraries (JUnit, Espresso)
+    
+    Wait for the sync to complete successfully. You'll see "Gradle sync finished" in the status bar.
+  </Step>
+
+  <Step title="Configure Android SDK">
+    Ensure you have the required SDK platforms installed:
+    
+    - Go to **Tools** > **SDK Manager**
+    - Under **SDK Platforms**, check that **Android API 36** is installed
+    - Under **SDK Tools**, verify that **Android SDK Build-Tools** is installed
+    - Click **Apply** if any installations are needed
+  </Step>
+
+  <Step title="Run the application">
+    You can run TechSales on an emulator or physical device:
+    
+    **Using an Emulator:**
+    1. Click **Device Manager** in Android Studio
+    2. Create a new virtual device (Pixel 7 or similar recommended)
+    3. Select a system image with API 29 or higher
+    4. Click the **Run** button (green triangle) in the toolbar
+    
+    **Using a Physical Device:**
+    1. Enable **Developer Options** on your Android device
+    2. Enable **USB Debugging**
+    3. Connect your device via USB
+    4. Select your device from the device dropdown
+    5. Click the **Run** button
+  </Step>
+
+  <Step title="Verify the app is running">
+    Once the build completes, the TechSales app will launch on your device or emulator. You should see:
+    
+    - The app icon on the home screen and app drawer
+    - The main activity displaying "Hello World!" in the center
+    - Edge-to-edge display with proper window insets handling
+    - Material Design theming applied
+  </Step>
+</Steps>
+
+## Project configuration
+
+TechSales is configured with the following settings in `app/build.gradle.kts:14-18`:
+
+```kotlin
+applicationId = "com.teamtech.techsales"
+minSdk = 29
+targetSdk = 36
+versionCode = 1
+versionName = "1.0"
+```
+
+### Key configuration details
+
+<CardGroup cols={2}>
+  <Card title="Application ID" icon="fingerprint">
+    `com.teamtech.techsales` - The unique identifier for the app on Android devices and Google Play
+  </Card>
+  <Card title="Min SDK" icon="mobile">
+    API 29 (Android 10) - Supports 87% of devices worldwide
+  </Card>
+  <Card title="Target SDK" icon="bullseye">
+    API 36 - Latest Android features and optimizations
+  </Card>
+  <Card title="Java Version" icon="code">
+    Java 11 - Modern language features and improved performance
+  </Card>
+</CardGroup>
+
+## Main activity
+
+The app launches with `MainActivity.java:11`, which implements:
+
+```java
+public class MainActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+    }
+}
+```
+
+This implementation provides:
+- **EdgeToEdge display** for immersive full-screen experience
+- **Window insets handling** to properly pad content around system UI
+- **Material Design integration** through AppCompatActivity
+
+## Build variants
+
+TechSales includes standard Android build variants configured in `app/build.gradle.kts:23-31`:
+
+- **Debug**: Development builds with debugging enabled
+- **Release**: Production builds with ProGuard optimization disabled (can be enabled for production)
+
+## Troubleshooting
 
 <AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+  <Accordion title="Gradle sync fails">
+    If Gradle sync fails:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
+    1. Check your internet connection (required for downloading dependencies)
+    2. Verify JDK 11 or later is configured in Android Studio (**File** > **Project Structure** > **SDK Location**)
+    3. Try **File** > **Invalidate Caches** > **Invalidate and Restart**
+    4. Delete the `.gradle` folder in your project and sync again
   </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+
+  <Accordion title="SDK not found error">
+    If you see SDK-related errors:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
+    1. Open **Tools** > **SDK Manager**
+    2. Install **Android API 36** under SDK Platforms
+    3. Install **Android SDK Build-Tools** under SDK Tools
+    4. Sync the project again
+  </Accordion>
+
+  <Accordion title="App crashes on launch">
+    If the app crashes immediately:
+    
+    1. Check the Logcat output in Android Studio for error messages
+    2. Verify your device/emulator is running Android 10 (API 29) or higher
+    3. Clean and rebuild: **Build** > **Clean Project**, then **Build** > **Rebuild Project**
+  </Accordion>
+
+  <Accordion title="Java version mismatch">
+    TechSales requires Java 11. If you encounter version issues:
+    
+    1. Go to **File** > **Project Structure** > **SDK Location**
+    2. Set the JDK location to JDK 11 or later
+    3. Verify the `gradle.properties` file doesn't override Java version
+    4. Sync the project
   </Accordion>
 </AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that you have TechSales running, you can:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Explore the code" icon="code" href="/development/project-structure">
+    Learn about the app architecture and project structure
+  </Card>
+  <Card title="Start developing" icon="hammer" href="/development/building">
+    Begin building features and customizing the app
+  </Card>
+  <Card title="Run tests" icon="vial" href="/development/testing">
+    Execute unit tests and instrumented tests
+  </Card>
+  <Card title="Build for release" icon="rocket" href="/deployment/release-builds">
+    Create production builds for distribution
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Resources
+
+- [Android Developer Documentation](https://developer.android.com/docs)
+- [Material Design Guidelines](https://m3.material.io/)
+- [AndroidX Libraries](https://developer.android.com/jetpack/androidx)
+- [Gradle Build Configuration](https://developer.android.com/build)

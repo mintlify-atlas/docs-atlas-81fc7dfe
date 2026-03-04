@@ -1,0 +1,390 @@
+---
+title: Testing
+description: Running unit tests and instrumented tests in TechSales Android
+---
+
+TechSales includes both unit tests (JVM) and instrumented tests (Android device/emulator) to ensure code quality and functionality.
+
+## Test Structure
+
+The project follows the standard Android testing structure:
+
+```
+app/src/
+├── test/                              # Unit tests (JVM)
+│   └── java/com/teamtech/techsales/
+│       └── ExampleUnitTest.java
+└── androidTest/                        # Instrumented tests (Android)
+    └── java/com/teamtech/techsales/
+        └── ExampleInstrumentedTest.java
+```
+
+### Unit Tests
+
+**Location:** `app/src/test/java/com/teamtech/techsales/`
+
+- Run on the local JVM (fast)
+- No Android framework dependencies required
+- Used for testing business logic, utilities, and data models
+
+### Instrumented Tests
+
+**Location:** `app/src/androidTest/java/com/teamtech/techsales/`
+
+- Run on Android devices or emulators
+- Have access to Android framework APIs
+- Used for UI testing, integration testing, and context-dependent code
+
+## Running Tests with Gradle
+
+### Run All Unit Tests
+
+```bash
+./gradlew test
+```
+
+This executes all unit tests in the `test/` directory.
+
+### Run Debug Unit Tests
+
+```bash
+./gradlew testDebug
+```
+
+### Run Release Unit Tests
+
+```bash
+./gradlew testRelease
+```
+
+### Run Instrumented Tests
+
+<Note>
+Instrumented tests require a connected device or running emulator.
+</Note>
+
+```bash
+# Run all instrumented tests
+./gradlew connectedAndroidTest
+
+# Run debug variant instrumented tests
+./gradlew connectedDebugAndroidTest
+```
+
+### Run All Tests
+
+Execute both unit and instrumented tests:
+
+```bash
+./gradlew test connectedAndroidTest
+```
+
+## Running Tests from Android Studio
+
+<Steps>
+  <Step title="Navigate to Test File">
+    Open a test file in the editor:
+    - `ExampleUnitTest.java` for unit tests
+    - `ExampleInstrumentedTest.java` for instrumented tests
+  </Step>
+  
+  <Step title="Run Test">
+    Right-click on:
+    - The test class name (runs all tests in the class)
+    - A specific test method (runs that test only)
+    - The test package (runs all tests in the package)
+    
+    Select **Run** from the context menu
+  </Step>
+  
+  <Step title="View Results">
+    Test results appear in the Run tool window at the bottom of Android Studio
+  </Step>
+</Steps>
+
+## Example Unit Test
+
+From `app/src/test/java/com/teamtech/techsales/ExampleUnitTest.java`:
+
+```java
+package com.teamtech.techsales;
+
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ */
+public class ExampleUnitTest {
+    @Test
+    public void addition_isCorrect() {
+        assertEquals(4, 2 + 2);
+    }
+}
+```
+
+**Key points:**
+- Uses JUnit 4 framework
+- Runs on local JVM (fast execution)
+- No Android dependencies
+- Uses standard JUnit assertions
+
+To run this test:
+
+```bash
+./gradlew test
+```
+
+## Example Instrumented Test
+
+From `app/src/androidTest/java/com/teamtech/techsales/ExampleInstrumentedTest.java`:
+
+```java
+package com.teamtech.techsales;
+
+import android.content.Context;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.junit.Assert.*;
+
+/**
+ * Instrumented test, which will execute on an Android device.
+ *
+ * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ */
+@RunWith(AndroidJUnit4.class)
+public class ExampleInstrumentedTest {
+    @Test
+    public void useAppContext() {
+        // Context of the app under test.
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        assertEquals("com.teamtech.techsales", appContext.getPackageName());
+    }
+}
+```
+
+**Key points:**
+- Uses AndroidJUnit4 runner
+- Requires Android device/emulator
+- Has access to Android Context and framework APIs
+- Verifies the app's package name is correct
+
+To run this test:
+
+```bash
+# Ensure device/emulator is connected
+adb devices
+
+# Run instrumented tests
+./gradlew connectedAndroidTest
+```
+
+## Test Dependencies
+
+Test dependencies are configured in `app/build.gradle.kts`:
+
+```kotlin
+dependencies {
+    // App dependencies
+    implementation(libs.appcompat)
+    implementation(libs.material)
+    implementation(libs.activity)
+    implementation(libs.constraintlayout)
+    
+    // Unit testing dependencies
+    testImplementation(libs.junit)
+    
+    // Instrumented testing dependencies
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
+}
+```
+
+### Dependency Scopes
+
+- **testImplementation** - Dependencies for unit tests only (JVM)
+- **androidTestImplementation** - Dependencies for instrumented tests only (Android)
+- **implementation** - Dependencies available to both app and tests
+
+### Key Testing Libraries
+
+- **JUnit** - Standard Java testing framework for unit tests
+- **AndroidX Test JUnit** - JUnit extensions for Android instrumented tests
+- **Espresso** - UI testing framework for Android
+
+## Test Configuration
+
+The test instrumentation runner is configured in `app/build.gradle.kts`:
+
+```kotlin
+defaultConfig {
+    applicationId = "com.teamtech.techsales"
+    minSdk = 29
+    targetSdk = 36
+    versionCode = 1
+    versionName = "1.0"
+
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+}
+```
+
+This runner enables:
+- Running instrumented tests on devices
+- Access to Android framework APIs
+- Integration with Android Test Orchestrator
+
+## Test Reports
+
+After running tests, Gradle generates HTML reports:
+
+### Unit Test Reports
+
+```
+app/build/reports/tests/testDebugUnitTest/index.html
+```
+
+Open this file in a browser to view:
+- Test results summary
+- Pass/fail status for each test
+- Execution time
+- Failure details and stack traces
+
+### Instrumented Test Reports
+
+```
+app/build/reports/androidTests/connected/index.html
+```
+
+### Generate Reports
+
+```bash
+# Run tests and open report
+./gradlew test
+open app/build/reports/tests/testDebugUnitTest/index.html
+```
+
+## Running Specific Tests
+
+### Run Specific Test Class
+
+```bash
+# Unit test
+./gradlew test --tests ExampleUnitTest
+
+# Instrumented test
+./gradlew connectedAndroidTest --tests ExampleInstrumentedTest
+```
+
+### Run Specific Test Method
+
+```bash
+./gradlew test --tests ExampleUnitTest.addition_isCorrect
+```
+
+### Run Tests Matching Pattern
+
+```bash
+./gradlew test --tests '*Unit*'
+```
+
+## Continuous Testing
+
+Run tests continuously during development:
+
+```bash
+# Run tests whenever files change
+./gradlew test --continuous
+```
+
+## Code Coverage
+
+Enable code coverage to measure test effectiveness:
+
+```bash
+# Run tests with coverage
+./gradlew testDebugUnitTest jacocoTestReport
+```
+
+Coverage reports are generated at:
+```
+app/build/reports/jacoco/jacocoTestReport/html/index.html
+```
+
+<Note>
+JaCoCo coverage reporting requires additional configuration in `build.gradle.kts`. This is not currently configured in the project.
+</Note>
+
+## Best Practices
+
+### Unit Tests
+
+- Test business logic and data transformations
+- Keep tests fast and isolated
+- Mock Android framework dependencies
+- Aim for high code coverage
+
+### Instrumented Tests
+
+- Test UI interactions and user flows
+- Verify integration with Android framework
+- Test database operations and file I/O
+- Use test data that's independent from production
+
+### General Guidelines
+
+- Write tests before fixing bugs (test-driven debugging)
+- Keep tests simple and focused on one behavior
+- Use descriptive test method names
+- Run tests before committing code
+
+## Troubleshooting
+
+### Unit Tests Fail to Run
+
+```bash
+# Clean and rebuild
+./gradlew clean test
+```
+
+### Instrumented Tests Can't Find Device
+
+```bash
+# Verify device is connected
+adb devices
+
+# Restart ADB if needed
+adb kill-server
+adb start-server
+```
+
+### Test Dependencies Not Resolved
+
+```bash
+# Refresh dependencies
+./gradlew build --refresh-dependencies
+```
+
+### Tests Pass Locally But Fail in CI
+
+- Check Android SDK versions match
+- Verify emulator configuration
+- Review test timeouts and flakiness
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Building" icon="hammer" href="/development/building">
+    Build the app for release
+  </Card>
+  <Card title="Project Structure" icon="folder-tree" href="/development/project-structure">
+    Understand where to add new tests
+  </Card>
+</CardGroup>

@@ -1,0 +1,320 @@
+---
+title: 'MainActivity'
+description: 'Complete documentation of MainActivity.java implementation'
+---
+
+# MainActivity
+
+The `MainActivity` class is the primary entry point for the TechSales Android application, extending `AppCompatActivity` and implementing modern Android UI patterns.
+
+## Full Source Code
+
+Location: `~/workspace/source/TechSales/app/src/main/java/com/teamtech/techsales/MainActivity.java`
+
+```java
+package com.teamtech.techsales;
+
+import android.os.Bundle;
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+    }
+}
+```
+
+## Class Structure
+
+### Package and Imports
+
+```java
+package com.teamtech.techsales;
+
+import android.os.Bundle;
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+```
+
+<Accordion title="Import Breakdown">
+- **android.os.Bundle**: State management for activity lifecycle
+- **androidx.activity.EdgeToEdge**: Modern immersive display API
+- **androidx.appcompat.app.AppCompatActivity**: Base activity class with backwards compatibility
+- **androidx.core.graphics.Insets**: Represents window inset dimensions
+- **androidx.core.view.ViewCompat**: View compatibility utilities
+- **androidx.core.view.WindowInsetsCompat**: Backwards-compatible window insets
+</Accordion>
+
+## onCreate() Method
+
+The `onCreate()` method initializes the activity and sets up the UI. Let's break down each component:
+
+### 1. Super Call
+
+```java
+super.onCreate(savedInstanceState);
+```
+
+Calls the parent class implementation to ensure proper activity initialization. The `savedInstanceState` parameter allows restoration of previous state if the activity is being recreated.
+
+### 2. EdgeToEdge Enable
+
+```java
+EdgeToEdge.enable(this);
+```
+
+<Note>
+This is called **before** `setContentView()` to ensure the window configuration is set up correctly before inflating the layout.
+</Note>
+
+#### What EdgeToEdge.enable() Does
+
+<Tabs>
+  <Tab title="Visual Effect">
+    Enables the app to draw content behind the system bars (status bar and navigation bar), creating an immersive, full-screen experience.
+    
+    **Before EdgeToEdge:**
+    ```
+    [Status Bar - System Controlled]
+    [App Content]
+    [Navigation Bar - System Controlled]
+    ```
+    
+    **After EdgeToEdge:**
+    ```
+    [App Content + Transparent Status Bar]
+    [App Content]
+    [App Content + Transparent Navigation Bar]
+    ```
+  </Tab>
+  <Tab title="Technical Details">
+    - Sets `WindowCompat.setDecorFitsSystemWindows(window, false)`
+    - Makes system bars transparent
+    - Allows content to extend into system bar areas
+    - Maintains system bar visibility for user interaction
+  </Tab>
+  <Tab title="Benefits">
+    - Modern, immersive UI
+    - Maximizes screen real estate
+    - Follows Material Design 3 guidelines
+    - Seamless status bar integration
+  </Tab>
+</Tabs>
+
+### 3. Content View Inflation
+
+```java
+setContentView(R.layout.activity_main);
+```
+
+Inflates the XML layout file `activity_main.xml` and sets it as the activity's content view. This establishes the UI hierarchy for the activity.
+
+Location reference: `MainActivity.java:17`
+
+### 4. Window Insets Handling
+
+```java
+ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+    return insets;
+});
+```
+
+This critical code ensures content doesn't get obscured by system UI elements.
+
+<Accordion title="Step-by-Step Breakdown">
+
+**Step 1: Find the root view**
+```java
+findViewById(R.id.main)
+```
+Retrieves the root ConstraintLayout from the inflated layout.
+
+**Step 2: Set the listener**
+```java
+ViewCompat.setOnApplyWindowInsetsListener(..., (v, insets) -> { ... })
+```
+Registers a callback that executes whenever window insets change (e.g., keyboard appears, system bars change).
+
+**Step 3: Extract system bar insets**
+```java
+Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+```
+Gets the dimensions of system UI elements (status bar, navigation bar).
+
+**Step 4: Apply padding**
+```java
+v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+```
+Adds padding to prevent content from being drawn under system bars.
+
+**Step 5: Return insets**
+```java
+return insets;
+```
+Passes insets to child views for further processing.
+
+</Accordion>
+
+#### Insets Visualization
+
+```
+┌─────────────────────────┐
+│   systemBars.top        │ ← Status Bar Height
+├─────────────────────────┤
+│                         │
+│   Content Area          │
+│   (Padded)              │
+│                         │
+├─────────────────────────┤
+│   systemBars.bottom     │ ← Navigation Bar Height
+└─────────────────────────┘
+  ↑                   ↑
+  left              right
+```
+
+## Lifecycle Methods
+
+Currently, MainActivity only overrides `onCreate()`. The activity lifecycle follows the standard Android pattern:
+
+```
+Activity Started
+       ↓
+   onCreate()     ← Implemented
+       ↓
+   onStart()
+       ↓
+   onResume()
+       ↓
+[Activity Running]
+```
+
+<Note>
+Additional lifecycle methods like `onPause()`, `onStop()`, and `onDestroy()` can be added as needed for resource management, state saving, or cleanup operations.
+</Note>
+
+## Key Concepts
+
+### AppCompatActivity
+
+```java
+public class MainActivity extends AppCompatActivity
+```
+
+Extends AppCompatActivity instead of Activity to provide:
+
+- Backwards compatibility with older Android versions
+- Material Design component support
+- ActionBar/Toolbar support (even though we use NoActionBar)
+- Fragment management utilities
+
+### Lambda Expression
+
+The insets listener uses a lambda expression for concise code:
+
+```java
+(v, insets) -> {
+    // Implementation
+    return insets;
+}
+```
+
+This is equivalent to implementing the `OnApplyWindowInsetsListener` interface.
+
+## Common Modifications
+
+<Accordion title="Adding Custom Toolbar">
+```java
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    EdgeToEdge.enable(this);
+    setContentView(R.layout.activity_main);
+    
+    // Add toolbar
+    Toolbar toolbar = findViewById(R.id.toolbar);
+    setSupportActionBar(toolbar);
+    
+    ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+        return insets;
+    });
+}
+```
+</Accordion>
+
+<Accordion title="Selective Insets Application">
+```java
+ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+    // Only apply top and bottom padding, allow content to extend to edges
+    v.setPadding(0, systemBars.top, 0, systemBars.bottom);
+    return insets;
+});
+```
+</Accordion>
+
+<Accordion title="Handling Keyboard Insets">
+```java
+ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+    Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+    
+    // Apply system bars and keyboard insets
+    v.setPadding(
+        systemBars.left,
+        systemBars.top,
+        systemBars.right,
+        Math.max(systemBars.bottom, ime.bottom)
+    );
+    return insets;
+});
+```
+</Accordion>
+
+## Best Practices
+
+1. **Always call EdgeToEdge.enable() before setContentView()**
+   - Ensures proper window configuration
+
+2. **Handle window insets for all root views**
+   - Prevents content from being obscured by system UI
+
+3. **Return insets from the listener**
+   - Allows child views to also process insets
+
+4. **Use ViewCompat for backwards compatibility**
+   - Ensures code works on older Android versions
+
+5. **Test on devices with different screen configurations**
+   - Different notch sizes, navigation bar styles, etc.
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="Layouts" icon="grid" href="./layouts">
+    View the activity_main.xml layout
+  </Card>
+  <Card title="Overview" icon="book" href="./overview">
+    Components architecture overview
+  </Card>
+</CardGroup>

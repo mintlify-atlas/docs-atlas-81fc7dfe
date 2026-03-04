@@ -1,0 +1,252 @@
+---
+title: App Signing Configuration
+description: Configure Android app signing for TechSales release builds
+---
+
+## Overview
+
+Android requires all APKs and AABs to be digitally signed before installation. This ensures app authenticity and enables secure updates. TechSales uses different signing configurations for debug and release builds.
+
+## Debug vs Release Signing
+
+### Debug Signing
+
+Debug builds are automatically signed with a debug keystore:
+- **Location:** `~/.android/debug.keystore`
+- **Password:** `android`
+- **Alias:** `androiddebugkey`
+- **Valid for:** Development only
+
+<Warning>
+Never use the debug keystore for production releases. Apps signed with debug keys cannot be published to Google Play Store.
+</Warning>
+
+### Release Signing
+
+Release builds require a production keystore that you create and manage securely.
+
+## Generating a Release Keystore
+
+<Steps>
+  <Step title="Create Keystore Directory">
+    Create a secure location for your keystore:
+    
+    ```bash
+    mkdir -p ~/keystores
+    cd ~/keystores
+    ```
+  </Step>
+
+  <Step title="Generate Keystore">
+    Use `keytool` to generate a new keystore:
+    
+    ```bash
+    keytool -genkey -v -keystore techsales-release.jks \
+      -keyalg RSA -keysize 2048 -validity 10000 \
+      -alias techsales-key
+    ```
+    
+    You'll be prompted to enter:
+    - Keystore password (choose a strong password)
+    - Key password (can be same as keystore password)
+    - Your name and organization details
+  </Step>
+
+  <Step title="Verify Keystore">
+    Confirm the keystore was created successfully:
+    
+    ```bash
+    keytool -list -v -keystore techsales-release.jks
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+**Critical:** Back up your keystore file and passwords securely. If you lose your release keystore, you cannot update your app on Google Play Store.
+</Warning>
+
+## Configuring Signing in Gradle
+
+Update `app/build.gradle.kts` to include signing configuration:
+
+```kotlin
+android {
+    namespace = "com.teamtech.techsales"
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("../keystores/techsales-release.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = "techsales-key"
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+}
+```
+
+## Storing Credentials Securely
+
+<Warning>
+Never commit keystore passwords or the keystore file itself to version control.
+</Warning>
+
+### Using Environment Variables
+
+Set environment variables before building:
+
+```bash
+export KEYSTORE_PASSWORD="your_keystore_password"
+export KEY_PASSWORD="your_key_password"
+./gradlew assembleRelease
+```
+
+### Using gradle.properties
+
+Create `gradle.properties` in your project root (add to `.gitignore`):
+
+```properties
+KEYSTORE_PASSWORD=your_keystore_password
+KEY_PASSWORD=your_key_password
+KEYSTORE_FILE=../keystores/techsales-release.jks
+KEY_ALIAS=techsales-key
+```
+
+Update `build.gradle.kts`:
+
+```kotlin
+signingConfigs {
+    create("release") {
+        storeFile = file(project.property("KEYSTORE_FILE") as String)
+        storePassword = project.property("KEYSTORE_PASSWORD") as String
+        keyAlias = project.property("KEY_ALIAS") as String
+        keyPassword = project.property("KEY_PASSWORD") as String
+    }
+}
+```
+
+### Using Android Studio
+
+Android Studio provides a UI for signing:
+
+1. Build > Generate Signed Bundle / APK
+2. Select AAB or APK
+3. Choose existing keystore or create new
+4. Enter passwords
+5. Select build variant (release)
+
+## Google Play App Signing
+
+<Info>
+Google Play App Signing is recommended for managing your app signing key securely.
+</Info>
+
+With Google Play App Signing:
+- Google manages your app signing key
+- You upload an AAB signed with an upload key
+- Google re-signs with the app signing key
+- You can reset lost upload keys
+
+### Enrollment
+
+1. Upload your first release AAB to Google Play Console
+2. Opt in to Google Play App Signing
+3. Google generates or imports your app signing key
+4. Download the upload key certificate for future updates
+
+## Verifying Signed APKs
+
+Check the signature of your signed APK:
+
+```bash
+jarsigner -verify -verbose -certs app-release.apk
+```
+
+View detailed certificate information:
+
+```bash
+apksigner verify --print-certs app-release.apk
+```
+
+## Key Management Best Practices
+
+<Steps>
+  <Step title="Backup Keystores">
+    Store keystore files in multiple secure locations:
+    - Encrypted cloud storage
+    - Secure password manager
+    - Offline encrypted USB drive
+  </Step>
+
+  <Step title="Document Credentials">
+    Record in a secure location:
+    - Keystore location
+    - Keystore password
+    - Key alias
+    - Key password
+    - Validity dates
+  </Step>
+
+  <Step title="Restrict Access">
+    - Limit keystore access to authorized team members
+    - Use role-based access in CI/CD systems
+    - Audit keystore usage regularly
+  </Step>
+
+  <Step title="Monitor Expiry">
+    - Track keystore validity period (10,000 days = ~27 years)
+    - Plan for key rotation if needed
+    - Ensure keys remain valid for app lifetime
+  </Step>
+</Steps>
+
+<Warning>
+**Security Checklist:**
+- ✓ Keystore backed up in 3+ locations
+- ✓ Passwords stored in secure password manager
+- ✓ Keystore file excluded from version control
+- ✓ Environment variables used for CI/CD
+- ✓ Google Play App Signing enabled
+</Warning>
+
+## CI/CD Signing
+
+For automated builds, store credentials securely:
+
+**GitHub Actions:**
+```yaml
+- name: Build Release AAB
+  env:
+    KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+    KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+  run: ./gradlew bundleRelease
+```
+
+**GitLab CI:**
+```yaml
+build:release:
+  script:
+    - ./gradlew bundleRelease
+  variables:
+    KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD
+    KEY_PASSWORD: $KEY_PASSWORD
+```
+
+<Note>
+For complete build instructions, see [Building Release APKs/AABs](/deployment/release-builds).
+</Note>

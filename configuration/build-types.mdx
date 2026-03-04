@@ -1,0 +1,526 @@
+---
+title: 'Build Types'
+description: 'Configuring debug and release builds in TechSales Android'
+---
+
+## Overview
+
+TechSales uses Gradle build types to create different versions of the app for development and production. Build types control code optimization, debugging capabilities, and security features.
+
+## Build Configuration
+
+Build types are defined in `app/build.gradle.kts`:
+
+```kotlin app/build.gradle.kts
+android {
+    namespace = "com.teamtech.techsales"
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
+
+    defaultConfig {
+        applicationId = "com.teamtech.techsales"
+        minSdk = 29
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+```
+
+## Default Configuration
+
+### Application Identity
+
+<ParamField path="namespace" type="String" required>
+  The app's package namespace used for R class generation and AndroidManifest merging.
+  
+  **Value:** `com.teamtech.techsales`
+</ParamField>
+
+<ParamField path="applicationId" type="String" required>
+  Unique identifier for the app on the device and in the Play Store.
+  
+  **Value:** `com.teamtech.techsales`
+</ParamField>
+
+<Note>
+`namespace` and `applicationId` can be different, but they typically match. The namespace is for code organization, while applicationId identifies the app at runtime.
+</Note>
+
+### SDK Versions
+
+<ParamField path="compileSdk" type="Int" required>
+  Android SDK version used for compilation. Uses SDK 36 with minor API level 1.
+  
+  **Value:** `release(36) { minorApiLevel = 1 }`
+</ParamField>
+
+<ParamField path="minSdk" type="Int" required>
+  Minimum Android version required to run the app.
+  
+  **Value:** `29` (Android 10)
+</ParamField>
+
+<ParamField path="targetSdk" type="Int" required>
+  Android version the app is designed to run on. Determines which platform behaviors apply.
+  
+  **Value:** `36`
+</ParamField>
+
+<Warning>
+Devices running Android versions below `minSdk = 29` (Android 10) cannot install TechSales. This excludes approximately 30% of Android devices as of 2024.
+</Warning>
+
+### Version Information
+
+<ParamField path="versionCode" type="Int" required>
+  Internal version number. Must increase with each release for Play Store updates.
+  
+  **Value:** `1`
+</ParamField>
+
+<ParamField path="versionName" type="String" required>
+  User-facing version string displayed to users.
+  
+  **Value:** `"1.0"`
+</ParamField>
+
+<Note>
+Increment `versionCode` for every release (even internal builds). Use semantic versioning for `versionName` (e.g., "1.0.0", "1.1.0", "2.0.0").
+</Note>
+
+### Test Configuration
+
+<ParamField path="testInstrumentationRunner" type="String">
+  Test runner for instrumented tests.
+  
+  **Value:** `androidx.test.runner.AndroidJUnitRunner`
+</ParamField>
+
+## Build Types
+
+### Debug Build (Default)
+
+The debug build type is automatically created by Android Gradle Plugin with these defaults:
+
+```kotlin
+debug {
+    isDebuggable = true
+    isMinifyEnabled = false
+    isShrinkResources = false
+    applicationIdSuffix = ".debug"
+    versionNameSuffix = "-debug"
+}
+```
+
+**Characteristics:**
+- Debugging enabled
+- No code obfuscation
+- Faster build times
+- Signed with debug keystore
+- Can be installed alongside release builds
+
+**Use Cases:**
+- Local development
+- Testing on devices
+- Debugging with Android Studio
+- CI/CD test builds
+
+### Release Build
+
+The release build type is explicitly configured:
+
+```kotlin app/build.gradle.kts
+release {
+    isMinifyEnabled = false
+    proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro"
+    )
+}
+```
+
+<ParamField path="isMinifyEnabled" type="Boolean" default="false">
+  Controls code shrinking and obfuscation using R8/ProGuard.
+  
+  **Current Value:** `false`  
+  **Recommended for Production:** `true`
+</ParamField>
+
+<ParamField path="proguardFiles" type="List<File>">
+  ProGuard/R8 configuration files for code optimization and obfuscation.
+</ParamField>
+
+<Warning>
+`isMinifyEnabled = false` means the release build is NOT optimized. For production releases, set this to `true` to reduce APK size and improve security.
+</Warning>
+
+## ProGuard Configuration
+
+### Default ProGuard File
+
+```kotlin
+getDefaultProguardFile("proguard-android-optimize.txt")
+```
+
+Provides Android-specific ProGuard rules with optimizations. Located in the Android SDK.
+
+**Alternative:**
+- `proguard-android.txt` - Basic rules without aggressive optimizations
+- `proguard-android-optimize.txt` - Includes optimization rules (recommended)
+
+### Custom ProGuard Rules
+
+Create `app/proguard-rules.pro` for custom rules:
+
+```proguard proguard-rules.pro
+# Keep model classes for JSON serialization
+-keep class com.teamtech.techsales.models.** { *; }
+
+# Keep custom views
+-keep class com.teamtech.techsales.views.** { *; }
+
+# Preserve line numbers for crash reports
+-keepattributes SourceFile,LineNumberTable
+
+# Remove logging in release builds
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
+}
+```
+
+<Note>
+ProGuard rules are only applied when `isMinifyEnabled = true`. They have no effect in the current configuration.
+</Note>
+
+## Enabling Code Optimization
+
+For production releases, enable minification:
+
+```kotlin
+buildTypes {
+    release {
+        isMinifyEnabled = true
+        isShrinkResources = true
+        proguardFiles(
+            getDefaultProguardFile("proguard-android-optimize.txt"),
+            "proguard-rules.pro"
+        )
+    }
+}
+```
+
+<ParamField path="isShrinkResources" type="Boolean" default="false">
+  Removes unused resources from the APK when enabled. Requires `isMinifyEnabled = true`.
+</ParamField>
+
+**Benefits of Enabling Minification:**
+- **Smaller APK Size** - Reduces download size by 30-50%
+- **Faster Performance** - Optimized bytecode runs more efficiently
+- **Better Security** - Obfuscated code is harder to reverse engineer
+- **Reduced Method Count** - Removes unused methods and classes
+
+## Compile Options
+
+```kotlin app/build.gradle.kts
+compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+```
+
+<ParamField path="sourceCompatibility" type="JavaVersion" required>
+  Java language version for source code.
+  
+  **Value:** Java 11
+</ParamField>
+
+<ParamField path="targetCompatibility" type="JavaVersion" required>
+  Java bytecode version for compiled classes.
+  
+  **Value:** Java 11
+</ParamField>
+
+<Note>
+Java 11 is the minimum version required for Android Gradle Plugin 8.0+. It enables modern Java features like `var`, lambda improvements, and HTTP client.
+</Note>
+
+## Building the App
+
+### Debug Build
+
+```bash
+# Build debug APK
+./gradlew assembleDebug
+
+# Install debug build on connected device
+./gradlew installDebug
+
+# Build and install
+./gradlew assembleDebug installDebug
+```
+
+**Output Location:** `app/build/outputs/apk/debug/app-debug.apk`
+
+### Release Build
+
+```bash
+# Build release APK
+./gradlew assembleRelease
+
+# Build Android App Bundle (for Play Store)
+./gradlew bundleRelease
+```
+
+**Output Locations:**
+- APK: `app/build/outputs/apk/release/app-release.apk`
+- AAB: `app/build/outputs/bundle/release/app-release.aab`
+
+<Note>
+Google Play requires Android App Bundles (.aab) for new apps. AAB files are smaller and enable dynamic delivery features.
+</Note>
+
+## Signing Configuration
+
+### Debug Signing
+
+Debug builds are automatically signed with the debug keystore:
+
+- **Location:** `~/.android/debug.keystore`
+- **Password:** `android`
+- **Alias:** `androiddebugkey`
+- **Alias Password:** `android`
+
+### Release Signing
+
+For production releases, configure a release keystore:
+
+```kotlin app/build.gradle.kts
+android {
+    signingConfigs {
+        create("release") {
+            storeFile = file("../keystore/release.keystore")
+            storePassword = providers.gradleProperty("RELEASE_STORE_PASSWORD").orNull
+            keyAlias = providers.gradleProperty("RELEASE_KEY_ALIAS").orNull
+            keyPassword = providers.gradleProperty("RELEASE_KEY_PASSWORD").orNull
+        }
+    }
+    
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+}
+```
+
+Store credentials in `~/.gradle/gradle.properties`:
+
+```properties
+RELEASE_STORE_PASSWORD=your_store_password
+RELEASE_KEY_ALIAS=your_key_alias
+RELEASE_KEY_PASSWORD=your_key_password
+```
+
+<Warning>
+Never commit keystores or passwords to version control. Add them to `.gitignore` and store securely in CI/CD secrets.
+</Warning>
+
+## Build Variants
+
+Build variants combine build types with product flavors. TechSales currently has:
+
+- **debug** - Debug build type
+- **release** - Release build type
+
+### Adding Product Flavors
+
+Create multiple app versions (e.g., free/paid, dev/staging/prod):
+
+```kotlin
+android {
+    flavorDimensions += "environment"
+    
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+        }
+        
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+        }
+        
+        create("production") {
+            dimension = "environment"
+        }
+    }
+}
+```
+
+This creates variants:
+- devDebug, devRelease
+- stagingDebug, stagingRelease
+- productionDebug, productionRelease
+
+## Build Performance
+
+### Optimization Tips
+
+1. **Enable Build Cache**
+
+```properties gradle.properties
+org.gradle.caching=true
+```
+
+2. **Enable Parallel Execution**
+
+```properties gradle.properties
+org.gradle.parallel=true
+```
+
+3. **Increase Memory**
+
+```properties gradle.properties
+org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=512m
+```
+
+4. **Use Configuration Cache**
+
+```properties gradle.properties
+org.gradle.configuration-cache=true
+```
+
+### Build Time Comparison
+
+| Build Type | Minification | Typical Time |
+|------------|--------------|-------------|
+| Debug      | Disabled     | 10-30s      |
+| Release    | Disabled     | 15-40s      |
+| Release    | Enabled      | 30-90s      |
+
+<Note>
+The first build after clean is slower. Subsequent builds use cached outputs and are significantly faster.
+</Note>
+
+## Recommended Production Configuration
+
+For production releases, use this configuration:
+
+```kotlin app/build.gradle.kts
+android {
+    buildTypes {
+        release {
+            // Enable code optimization
+            isMinifyEnabled = true
+            isShrinkResources = true
+            
+            // ProGuard configuration
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            
+            // Signing configuration
+            signingConfig = signingConfigs.getByName("release")
+            
+            // Disable debugging
+            isDebuggable = false
+            
+            // Enable ProGuard mapping file upload to Play Console
+            // for crash stack trace deobfuscation
+        }
+    }
+}
+```
+
+## Analyzing Build Output
+
+### APK Size Analysis
+
+```bash
+# Analyze APK contents
+./gradlew analyzeReleaseBundle
+
+# Or use Android Studio
+# Build > Analyze APK...
+```
+
+### Dependency Tree
+
+```bash
+# View all dependencies
+./gradlew :app:dependencies
+```
+
+### Build Scan
+
+```bash
+# Generate build scan with performance metrics
+./gradlew assembleRelease --scan
+```
+
+## Common Issues
+
+### ProGuard/R8 Errors
+
+**Problem:** App crashes in release build but works in debug.
+
+**Solution:** Add ProGuard keep rules for classes causing issues:
+
+```proguard
+-keep class com.your.problematic.Class { *; }
+```
+
+### Signing Errors
+
+**Problem:** "Could not find signing config 'release'"
+
+**Solution:** Ensure signing config is defined before build types reference it.
+
+### Duplicate Classes
+
+**Problem:** "Duplicate class found in modules..."
+
+**Solution:** Exclude conflicting dependencies:
+
+```kotlin
+implementation(libs.some.library) {
+    exclude(group = "com.duplicate", module = "module")
+}
+```
+
+## Related Documentation
+
+- [Gradle Configuration](/configuration/gradle) - Gradle setup and project structure
+- [Dependencies](/configuration/dependencies) - Managing project dependencies
+- [Deployment](/deployment/distribution) - Publishing to Google Play Store

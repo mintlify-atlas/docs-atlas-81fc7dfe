@@ -1,0 +1,109 @@
+---
+title: Introduction to TechSales Android
+description: A modern native Android application for technical sales management built with Material Design and AndroidX libraries
+---
+
+## Welcome to TechSales Android
+
+TechSales is a native Android application designed to streamline technical sales management for field sales teams. Built with the latest Android development standards, it provides a modern, efficient mobile experience for managing sales activities on the go.
+
+## Key features
+
+TechSales Android leverages cutting-edge Android technologies to deliver a premium user experience:
+
+- **Modern Material Design** - Built with Material Design 3 components (v1.10.0) for a consistent, beautiful UI that follows Google's design guidelines
+- **Edge-to-Edge UI** - Implements EdgeToEdge display for immersive full-screen experiences that utilize the entire device screen
+- **AndroidX Libraries** - Powered by the latest AndroidX libraries including AppCompat, ConstraintLayout, and Activity components for backward compatibility and modern features
+- **Latest Android SDK** - Targets Android SDK 36 with support for devices running Android 10 (API 29) and above
+- **Java 11** - Built with Java 11 for modern language features and improved performance
+- **Modular Architecture** - Clean project structure with proper separation of concerns using the standard Android application architecture
+
+## Technology stack
+
+TechSales is built with a robust technology foundation:
+
+<CardGroup cols={2}>
+  <Card title="Language" icon="code">
+    Java 11 with modern language features
+  </Card>
+  <Card title="SDK" icon="android">
+    Android SDK 36 (minSdk 29)
+  </Card>
+  <Card title="UI Framework" icon="palette">
+    Material Design 3 & ConstraintLayout
+  </Card>
+  <Card title="Libraries" icon="layer-group">
+    AndroidX AppCompat, Activity, ConstraintLayout
+  </Card>
+</CardGroup>
+
+## Application details
+
+- **Package Name:** `com.teamtech.techsales`
+- **Minimum Android Version:** Android 10 (API 29)
+- **Target Android Version:** Android 36
+- **Build System:** Gradle with Kotlin DSL
+- **Version:** 1.0 (versionCode 1)
+
+## Get started
+
+Ready to start working with TechSales Android? Choose your path:
+
+<CardGroup cols={2}>
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Get up and running in minutes with our quick start guide
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Detailed installation and setup instructions
+  </Card>
+  <Card title="Project Structure" icon="diagram-project" href="/development/project-structure">
+    Learn about the app's structure and design patterns
+  </Card>
+  <Card title="Components" icon="code" href="/components/overview">
+    Explore the app's components and UI architecture
+  </Card>
+</CardGroup>
+
+## Project structure
+
+The TechSales Android application follows the standard Android project structure:
+
+```
+TechSales/
+├── app/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/teamtech/techsales/
+│   │   │   │   └── MainActivity.java
+│   │   │   ├── res/
+│   │   │   │   ├── layout/
+│   │   │   │   ├── values/
+│   │   │   │   └── mipmap/
+│   │   │   └── AndroidManifest.xml
+│   │   └── test/
+│   └── build.gradle.kts
+├── gradle/
+│   └── libs.versions.toml
+└── settings.gradle.kts
+```
+
+<Note>
+  TechSales uses Gradle Version Catalogs (`libs.versions.toml`) for centralized dependency management, making it easy to maintain and update library versions across the project.
+</Note>
+
+## Requirements
+
+Before you begin, ensure you have:
+
+- **Android Studio** Hedgehog (2023.1.1) or later
+- **Java Development Kit (JDK)** 11 or later
+- **Android SDK** with API level 29 or higher
+- **Gradle** 8.0 or later (included with Android Studio)
+
+## Next steps
+
+Now that you understand what TechSales Android is all about, you can:
+
+1. Follow the [Quick start guide](/quickstart) to run the app immediately
+2. Review the [Installation guide](/installation) for detailed setup instructions
+3. Explore the source code in the `app/src/main/java/com/teamtech/techsales/` directory

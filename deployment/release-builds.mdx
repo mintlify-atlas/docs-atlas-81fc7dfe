@@ -1,0 +1,181 @@
+---
+title: Building Release APKs and AABs
+description: Learn how to build production-ready release artifacts for TechSales Android
+---
+
+## Overview
+
+Building release versions of TechSales requires generating optimized APK or AAB files suitable for distribution. This guide covers the complete build process using Gradle.
+
+## Build Configuration
+
+The app's release configuration is defined in `app/build.gradle.kts`:
+
+```kotlin
+buildTypes {
+    release {
+        isMinifyEnabled = false
+        proguardFiles(
+            getDefaultProguardFile("proguard-android-optimize.txt"),
+            "proguard-rules.pro"
+        )
+    }
+}
+```
+
+**Current Build Details:**
+- **Application ID:** `com.teamtech.techsales`
+- **Version Code:** `1`
+- **Version Name:** `1.0`
+- **Target SDK:** `36`
+- **Min SDK:** `29`
+
+## Building Release APK
+
+<Steps>
+  <Step title="Open Terminal">
+    Navigate to your project root directory:
+    
+    ```bash
+    cd ~/workspace/source/TechSales/
+    ```
+  </Step>
+
+  <Step title="Run Assembly Command">
+    Execute the Gradle command to build the release APK:
+    
+    ```bash
+    ./gradlew assembleRelease
+    ```
+    
+    This compiles the app, processes resources, and packages everything into an APK file.
+  </Step>
+
+  <Step title="Locate Output">
+    The generated APK will be located at:
+    
+    ```
+    app/build/outputs/apk/release/app-release.apk
+    ```
+  </Step>
+</Steps>
+
+## Building Android App Bundle (AAB)
+
+<Info>
+Google Play Store requires AAB format for new apps. AABs enable smaller downloads through dynamic delivery.
+</Info>
+
+<Steps>
+  <Step title="Run Bundle Command">
+    Generate the Android App Bundle:
+    
+    ```bash
+    ./gradlew bundleRelease
+    ```
+  </Step>
+
+  <Step title="Locate Output">
+    The generated AAB will be located at:
+    
+    ```
+    app/build/outputs/bundle/release/app-release.aab
+    ```
+  </Step>
+</Steps>
+
+## ProGuard and R8 Optimization
+
+The TechSales app uses R8 for code optimization and obfuscation. Currently, minification is disabled in the build configuration:
+
+```kotlin
+isMinifyEnabled = false
+```
+
+### Enabling Code Shrinking
+
+For production releases, it's recommended to enable minification:
+
+```kotlin
+release {
+    isMinifyEnabled = true
+    proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro"
+    )
+}
+```
+
+### ProGuard Rules
+
+Custom ProGuard rules are defined in `app/proguard-rules.pro`. Add rules to preserve critical classes:
+
+```proguard
+# Keep model classes
+-keep class com.teamtech.techsales.models.** { *; }
+
+# Keep custom views
+-keep public class * extends android.view.View
+```
+
+<Warning>
+Always test your app thoroughly after enabling ProGuard/R8, as aggressive optimization can break reflection-based code.
+</Warning>
+
+## Build Variants
+
+You can list all available build variants:
+
+```bash
+./gradlew tasks --all
+```
+
+Common build tasks:
+- `assembleDebug` - Build debug APK
+- `assembleRelease` - Build release APK
+- `bundleDebug` - Build debug AAB
+- `bundleRelease` - Build release AAB
+
+## Clean Builds
+
+For a fresh build, clean previous outputs first:
+
+```bash
+./gradlew clean assembleRelease
+```
+
+## Output Structure
+
+After building, your output directory structure:
+
+```
+app/build/outputs/
+├── apk/
+│   ├── debug/
+│   │   └── app-debug.apk
+│   └── release/
+│       └── app-release.apk
+└── bundle/
+    ├── debug/
+    │   └── app-debug.aab
+    └── release/
+        └── app-release.aab
+```
+
+## Build Verification
+
+Verify your build details using:
+
+```bash
+./gradlew assembleRelease --info
+```
+
+This provides detailed build information including:
+- Compilation status
+- Resource processing
+- Packaging details
+- Build duration
+
+<Note>
+Release builds must be signed before distribution. See the [Signing](/deployment/signing) documentation for details.
+</Note>

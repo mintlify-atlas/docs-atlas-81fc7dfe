@@ -1,0 +1,473 @@
+---
+title: Installation
+description: Detailed installation and setup guide for TechSales Android development environment
+---
+
+## Installation overview
+
+This comprehensive guide walks you through setting up a complete development environment for TechSales Android, from installing Android Studio to running your first build.
+
+## System requirements
+
+Before installing, verify your system meets these requirements:
+
+### Hardware requirements
+
+- **RAM**: 8 GB minimum, 16 GB recommended
+- **Disk Space**: 10 GB minimum for Android Studio + SDK
+- **Display**: 1280 x 800 minimum screen resolution
+- **Processor**: x86_64 CPU architecture; 2nd generation Intel Core or newer, or AMD equivalent
+
+### Operating system requirements
+
+<Tabs>
+  <Tab title="Windows">
+    - Windows 10 (64-bit) or later
+    - Windows Subsystem for Linux (WSL) not required but optional
+  </Tab>
+  <Tab title="macOS">
+    - macOS 10.14 (Mojave) or later
+    - For Apple Silicon Macs: Rosetta 2 may be needed for some tools
+  </Tab>
+  <Tab title="Linux">
+    - Ubuntu 18.04 LTS or later (64-bit)
+    - Debian 10 or later
+    - Fedora 30 or later
+    - GNOME or KDE desktop environment
+  </Tab>
+</Tabs>
+
+## Install Java Development Kit
+
+TechSales requires Java 11 as specified in `app/build.gradle.kts:32-35`:
+
+```kotlin
+compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+```
+
+<Steps>
+  <Step title="Download JDK 11">
+    Download and install JDK 11 or later:
+    
+    - **Oracle JDK**: [Download from Oracle](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
+    - **OpenJDK**: [Download from Adoptium](https://adoptium.net/temurin/releases/?version=11)
+    - **Amazon Corretto**: [Download from AWS](https://aws.amazon.com/corretto/)
+  </Step>
+
+  <Step title="Verify Java installation">
+    Open a terminal or command prompt and verify the installation:
+    
+    ```bash
+    java -version
+    ```
+    
+    You should see output indicating Java version 11 or higher:
+    
+    ```
+    openjdk version "11.0.x" ...
+    ```
+  </Step>
+
+  <Step title="Set JAVA_HOME environment variable">
+    Set the JAVA_HOME environment variable to point to your JDK installation:
+    
+    <Tabs>
+      <Tab title="Windows">
+        1. Open **System Properties** > **Advanced** > **Environment Variables**
+        2. Click **New** under System Variables
+        3. Set Variable Name: `JAVA_HOME`
+        4. Set Variable Value: Path to JDK (e.g., `C:\Program Files\Java\jdk-11`)
+        5. Click **OK**
+      </Tab>
+      <Tab title="macOS/Linux">
+        Add to your `~/.bashrc`, `~/.zshrc`, or `~/.profile`:
+        
+        ```bash
+        export JAVA_HOME=/path/to/jdk-11
+        export PATH=$JAVA_HOME/bin:$PATH
+        ```
+        
+        Then reload:
+        ```bash
+        source ~/.bashrc  # or ~/.zshrc
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## Install Android Studio
+
+<Steps>
+  <Step title="Download Android Studio">
+    Download the latest version of Android Studio from the official website:
+    
+    [Download Android Studio](https://developer.android.com/studio)
+    
+    <Note>
+      TechSales is compatible with Android Studio Hedgehog (2023.1.1) or later. The latest version is recommended for best performance and features.
+    </Note>
+  </Step>
+
+  <Step title="Run the installer">
+    <Tabs>
+      <Tab title="Windows">
+        1. Run the `.exe` installer
+        2. Follow the setup wizard
+        3. Choose **Standard** installation type
+        4. Select a theme (optional)
+        5. Review settings and click **Finish**
+      </Tab>
+      <Tab title="macOS">
+        1. Open the `.dmg` file
+        2. Drag Android Studio to **Applications** folder
+        3. Launch Android Studio from Applications
+        4. Follow the setup wizard
+        5. Choose **Standard** installation
+      </Tab>
+      <Tab title="Linux">
+        1. Extract the `.tar.gz` file:
+           ```bash
+           tar -xzf android-studio-*.tar.gz
+           ```
+        2. Navigate to the android-studio/bin/ directory:
+           ```bash
+           cd android-studio/bin
+           ```
+        3. Run the studio.sh script:
+           ```bash
+           ./studio.sh
+           ```
+        4. Follow the setup wizard
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Complete Android Studio setup wizard">
+    On first launch, Android Studio will:
+    
+    1. Check for existing SDK installations
+    2. Download Android SDK components
+    3. Download Android SDK Platform-Tools
+    4. Download Android Emulator
+    5. Configure default settings
+    
+    This process may take 10-20 minutes depending on your internet connection.
+  </Step>
+</Steps>
+
+## Configure Android SDK
+
+TechSales requires specific SDK components based on its configuration:
+
+<Steps>
+  <Step title="Open SDK Manager">
+    In Android Studio:
+    
+    1. Click **Tools** > **SDK Manager**
+    2. Or click the SDK Manager icon in the toolbar
+    3. Or go to **File** > **Settings** > **Appearance & Behavior** > **System Settings** > **Android SDK**
+  </Step>
+
+  <Step title="Install SDK platforms">
+    Under the **SDK Platforms** tab, install:
+    
+    - **Android API 36** (Android 15) - Required for `targetSdk = 36`
+    - **Android API 29** (Android 10) - Required for `minSdk = 29`
+    - **Android API 34** (Android 14) - Recommended for testing
+    
+    <Note>
+      TechSales compiles against SDK 36 with `minorApiLevel = 1` as specified in `app/build.gradle.kts:7-11`.
+    </Note>
+  </Step>
+
+  <Step title="Install SDK tools">
+    Under the **SDK Tools** tab, ensure these are installed:
+    
+    - **Android SDK Build-Tools** (latest version)
+    - **Android Emulator**
+    - **Android SDK Platform-Tools**
+    - **Intel x86 Emulator Accelerator (HAXM installer)** (Windows/Linux)
+    - **Google Play services** (optional, for future features)
+  </Step>
+
+  <Step title="Accept licenses">
+    Click **Apply** to download and install selected components. You'll need to accept Android SDK licenses:
+    
+    1. Review each license agreement
+    2. Click **Accept**
+    3. Click **Next** or **Finish**
+    
+    Alternatively, accept all licenses from the command line:
+    
+    ```bash
+    cd $ANDROID_HOME/cmdline-tools/latest/bin
+    ./sdkmanager --licenses
+    ```
+  </Step>
+</Steps>
+
+## Clone and import TechSales project
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the TechSales repository to your local machine:
+    
+    ```bash
+    git clone <repository-url>
+    cd TechSales
+    ```
+    
+    Replace `<repository-url>` with your actual repository URL.
+  </Step>
+
+  <Step title="Open project in Android Studio">
+    In Android Studio:
+    
+    1. Select **File** > **Open**
+    2. Navigate to the cloned `TechSales` directory
+    3. Select the root folder (containing `settings.gradle.kts`)
+    4. Click **OK**
+  </Step>
+
+  <Step title="Wait for initial Gradle sync">
+    Android Studio will automatically start syncing the project. This involves:
+    
+    1. Reading project configuration from `settings.gradle.kts:25-26`:
+       ```kotlin
+       rootProject.name = "TechSales"
+       include(":app")
+       ```
+    
+    2. Downloading dependencies from `gradle/libs.versions.toml:11-18`:
+       - androidx.appcompat:appcompat:1.6.1
+       - com.google.android.material:material:1.10.0
+       - androidx.activity:activity:1.8.0
+       - androidx.constraintlayout:constraintlayout:2.1.4
+    
+    3. Configuring build tools (Android Gradle Plugin 9.0.1)
+    
+    <Note>
+      The first Gradle sync can take 5-15 minutes as it downloads all dependencies. Subsequent syncs will be much faster.
+    </Note>
+  </Step>
+
+  <Step title="Configure JDK in Android Studio">
+    If prompted, configure the JDK:
+    
+    1. Go to **File** > **Project Structure** > **SDK Location**
+    2. Under **JDK location**, click the dropdown
+    3. Select **Download JDK** or choose an existing JDK 11+ installation
+    4. Click **Apply** and **OK**
+  </Step>
+
+  <Step title="Verify Gradle sync success">
+    Check the **Build** panel at the bottom of Android Studio:
+    
+    - Success message: "Gradle sync finished in Xs"
+    - No error messages in the sync log
+    - Project structure visible in the Project panel
+    
+    If sync fails, see [Troubleshooting](#troubleshooting) below.
+  </Step>
+</Steps>
+
+## Setup Android emulator
+
+<Steps>
+  <Step title="Open Device Manager">
+    In Android Studio:
+    
+    1. Click **Tools** > **Device Manager**
+    2. Or click the Device Manager icon in the toolbar
+  </Step>
+
+  <Step title="Create virtual device">
+    1. Click **Create Device**
+    2. Select a device definition (Pixel 7 recommended)
+    3. Click **Next**
+  </Step>
+
+  <Step title="Select system image">
+    1. Choose a system image with API 29 or higher
+    2. Recommended: **API 34** (Android 14) with Google APIs
+    3. Click **Download** if not already installed
+    4. Click **Next**
+  </Step>
+
+  <Step title="Configure AVD">
+    1. Name your AVD (e.g., "Pixel_7_API_34")
+    2. Select **Portrait** orientation
+    3. Enable **Hardware - GLES 2.0** for better graphics
+    4. Click **Finish**
+  </Step>
+
+  <Step title="Launch emulator">
+    Click the **Play** button next to your AVD in Device Manager to start the emulator.
+  </Step>
+</Steps>
+
+## Verify installation
+
+<Steps>
+  <Step title="Build the project">
+    Trigger a full build to verify everything is configured correctly:
+    
+    1. Click **Build** > **Clean Project**
+    2. Wait for completion
+    3. Click **Build** > **Rebuild Project**
+    
+    Check the **Build** panel for any errors.
+  </Step>
+
+  <Step title="Run TechSales">
+    1. Select your device/emulator from the device dropdown
+    2. Click the **Run** button (green triangle)
+    3. Wait for the build and deployment to complete
+  </Step>
+
+  <Step title="Verify app launch">
+    The app should launch and display:
+    
+    - Main activity with "Hello World!" text centered on screen
+    - Edge-to-edge layout properly handling system bars
+    - Material Design theme applied
+    - No crashes or errors in Logcat
+  </Step>
+
+  <Step title="Check Logcat output">
+    Open the **Logcat** panel and verify:
+    
+    ```
+    MainActivity: onCreate called
+    EdgeToEdge enabled
+    Window insets applied
+    ```
+    
+    No error or warning messages related to TechSales.
+  </Step>
+</Steps>
+
+## Project dependencies
+
+TechSales uses the following dependencies managed through Gradle Version Catalogs:
+
+### Core libraries
+
+```toml
+[libraries]
+appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.6.1" }
+material = { group = "com.google.android.material", name = "material", version = "1.10.0" }
+activity = { group = "androidx.activity", name = "activity", version = "1.8.0" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.1.4" }
+```
+
+### Testing libraries
+
+```toml
+junit = { group = "junit", name = "junit", version = "4.13.2" }
+ext-junit = { group = "androidx.test.ext", name = "junit", version = "1.1.5" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version = "3.5.1" }
+```
+
+All dependencies are declared in `app/build.gradle.kts:38-46` and resolved from Google and Maven Central repositories configured in `settings.gradle.kts:17-23`.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Gradle sync fails with 'SDK not found'">
+    1. Open **File** > **Project Structure** > **SDK Location**
+    2. Verify the **Android SDK location** points to a valid SDK installation
+    3. If empty or incorrect, click the folder icon and select your SDK directory
+    4. Typical locations:
+       - Windows: `C:\Users\<username>\AppData\Local\Android\Sdk`
+       - macOS: `/Users/<username>/Library/Android/sdk`
+       - Linux: `/home/<username>/Android/Sdk`
+    5. Click **Apply** and sync again
+  </Accordion>
+
+  <Accordion title="Java version mismatch errors">
+    TechSales requires Java 11. If you see version errors:
+    
+    1. Verify your JDK installation: `java -version`
+    2. In Android Studio: **File** > **Project Structure** > **SDK Location**
+    3. Under **Gradle Settings**, ensure JDK 11+ is selected
+    4. If needed, click **Download JDK** and select version 11 or higher
+    5. Click **Apply** and restart Android Studio
+  </Accordion>
+
+  <Accordion title="Unable to download dependencies">
+    If Gradle cannot download dependencies:
+    
+    1. Check your internet connection
+    2. Verify repository URLs in `settings.gradle.kts:1-23`
+    3. If behind a corporate proxy, configure proxy settings:
+       - **File** > **Settings** > **Appearance & Behavior** > **System Settings** > **HTTP Proxy**
+    4. Try **File** > **Invalidate Caches** > **Invalidate and Restart**
+    5. Delete `~/.gradle/caches` and sync again
+  </Accordion>
+
+  <Accordion title="Android Gradle Plugin version error">
+    TechSales uses AGP 9.0.1 as specified in `gradle/libs.versions.toml:2`:
+    
+    ```toml
+    agp = "9.0.1"
+    ```
+    
+    If you encounter AGP version issues:
+    
+    1. Ensure Android Studio is up to date (Hedgehog or later)
+    2. Check Gradle wrapper version in `gradle/wrapper/gradle-wrapper.properties`
+    3. AGP 9.0.1 requires Gradle 8.0 or later
+    4. Update if necessary: **File** > **Project Structure** > **Project** > **Gradle Version**
+  </Accordion>
+
+  <Accordion title="Emulator fails to start">
+    If the Android Emulator fails to start:
+    
+    1. Check virtualization is enabled in BIOS (Intel VT-x or AMD-V)
+    2. On Windows, ensure Hyper-V is disabled if using HAXM
+    3. Increase RAM allocated to AVD (2GB minimum, 4GB recommended)
+    4. Try creating a new AVD with a different system image
+    5. Check disk space (emulators require 5-10GB free space)
+  </Accordion>
+
+  <Accordion title="Build succeeds but app crashes on launch">
+    If the app builds but crashes immediately:
+    
+    1. Check Logcat for stack traces
+    2. Verify device/emulator is running API 29 or higher (TechSales minSdk)
+    3. Ensure system images include Google APIs if needed
+    4. Try **Build** > **Clean Project** then rebuild
+    5. Check AndroidManifest.xml:1 for configuration errors
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+With TechSales installed and running, you're ready to:
+
+<CardGroup cols={2}>
+  <Card title="Explore architecture" icon="diagram-project" href="/development/project-structure">
+    Understand the app structure and design patterns
+  </Card>
+  <Card title="Start development" icon="code" href="/development/building">
+    Begin building features and customizing the app
+  </Card>
+  <Card title="Configure build" icon="gear" href="/configuration/gradle">
+    Customize build variants and signing configs
+  </Card>
+  <Card title="Run tests" icon="vial" href="/development/testing">
+    Execute unit and instrumented tests
+  </Card>
+</CardGroup>
+
+## Additional resources
+
+- [Android Studio User Guide](https://developer.android.com/studio/intro)
+- [Configure Your Build](https://developer.android.com/build)
+- [Manage Your Android SDK](https://developer.android.com/studio/intro/update#sdk-manager)
+- [Create and Manage Virtual Devices](https://developer.android.com/studio/run/managing-avds)

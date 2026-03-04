@@ -1,0 +1,331 @@
+---
+title: Running the App
+description: How to run TechSales Android on emulators and physical devices
+---
+
+There are multiple ways to run the TechSales Android application: through Android Studio, using ADB commands, or via Gradle tasks.
+
+## Running from Android Studio
+
+The easiest way to run TechSales is through Android Studio:
+
+<Steps>
+  <Step title="Open Project">
+    Open the TechSales project in Android Studio
+  </Step>
+  
+  <Step title="Select Device">
+    Choose a target device from the device dropdown:
+    - Physical device connected via USB
+    - Android Virtual Device (AVD) emulator
+  </Step>
+  
+  <Step title="Run">
+    Click the Run button (green play icon) or press `Shift + F10`
+    
+    Android Studio will:
+    - Build the debug APK
+    - Install it on the selected device
+    - Launch the MainActivity
+  </Step>
+</Steps>
+
+## Running with Gradle
+
+Use Gradle tasks to build, install, and optionally launch the app:
+
+### Install Debug Build
+
+```bash
+./gradlew installDebug
+```
+
+This builds and installs the debug APK on all connected devices.
+
+### Install Release Build
+
+```bash
+./gradlew installRelease
+```
+
+<Note>
+Release builds require signing configuration. The unsigned APK must be signed before installation on production devices.
+</Note>
+
+### Uninstall App
+
+To remove the app from connected devices:
+
+```bash
+./gradlew uninstallDebug
+# or
+./gradlew uninstallRelease
+```
+
+## Running with ADB
+
+Android Debug Bridge (ADB) provides direct control over app installation and launching.
+
+### Prerequisites
+
+Ensure ADB is in your PATH and devices are connected:
+
+```bash
+adb devices
+```
+
+### Install APK
+
+First, build the APK (see [Building](/development/building)), then install it:
+
+```bash
+# Install debug build
+adb install app/build/outputs/apk/debug/app-debug.apk
+
+# Install release build
+adb install app/build/outputs/apk/release/app-release-unsigned.apk
+
+# Reinstall (keep app data)
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Launch the App
+
+Launch the MainActivity using the package name and activity:
+
+```bash
+adb shell am start -n com.teamtech.techsales/.MainActivity
+```
+
+**Package name:** `com.teamtech.techsales`  
+**Main activity:** `MainActivity`
+
+The activity reference `.MainActivity` is shorthand for `com.teamtech.techsales.MainActivity`.
+
+### Combined Install and Launch
+
+```bash
+# Build, install, and launch in one command
+./gradlew installDebug && adb shell am start -n com.teamtech.techsales/.MainActivity
+```
+
+### Stop the App
+
+```bash
+adb shell am force-stop com.teamtech.techsales
+```
+
+### Uninstall via ADB
+
+```bash
+adb uninstall com.teamtech.techsales
+```
+
+## Setting Up an Emulator
+
+To run TechSales on an Android Virtual Device (AVD):
+
+<Steps>
+  <Step title="Open AVD Manager">
+    In Android Studio, go to **Tools > Device Manager**
+  </Step>
+  
+  <Step title="Create Virtual Device">
+    Click **Create Device** and select a device profile (e.g., Pixel 6)
+  </Step>
+  
+  <Step title="Select System Image">
+    Choose a system image matching the app's requirements:
+    
+    - **Minimum API:** 29 (Android 10)
+    - **Target API:** 36
+    
+    Recommended: Use API level 29 or higher
+  </Step>
+  
+  <Step title="Configure AVD">
+    Set AVD name and advanced settings:
+    - RAM: At least 2GB
+    - Internal storage: 2GB+
+    - Graphics: Hardware acceleration
+  </Step>
+  
+  <Step title="Launch Emulator">
+    Click the play button next to your AVD in the Device Manager
+  </Step>
+</Steps>
+
+### Launch Emulator from Command Line
+
+```bash
+# List available emulators
+emulator -list-avds
+
+# Launch specific emulator
+emulator -avd <avd_name>
+```
+
+## Device Debugging
+
+### Enable USB Debugging
+
+To run on a physical device:
+
+<Steps>
+  <Step title="Enable Developer Options">
+    On your Android device:
+    1. Go to **Settings > About phone**
+    2. Tap **Build number** 7 times
+  </Step>
+  
+  <Step title="Enable USB Debugging">
+    1. Go to **Settings > System > Developer options**
+    2. Enable **USB debugging**
+  </Step>
+  
+  <Step title="Connect Device">
+    Connect your device via USB and authorize the computer when prompted
+  </Step>
+  
+  <Step title="Verify Connection">
+    Check device is recognized:
+    
+    ```bash
+    adb devices
+    ```
+    
+    You should see your device listed
+  </Step>
+</Steps>
+
+### Wireless Debugging (Android 11+)
+
+For devices running Android 11 or higher:
+
+```bash
+# Enable wireless debugging in Developer Options
+# Then connect via IP:
+adb connect <device-ip>:5555
+```
+
+### View Logs
+
+Monitor app logs in real-time:
+
+```bash
+# View all logs
+adb logcat
+
+# Filter by package name
+adb logcat | grep com.teamtech.techsales
+
+# Filter by tag
+adb logcat -s TechSales
+```
+
+## Application Entry Point
+
+The app launches through the MainActivity, as defined in `AndroidManifest.xml`:
+
+```xml
+<activity
+    android:name=".MainActivity"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+</activity>
+```
+
+- **Activity class:** `com.teamtech.techsales.MainActivity`
+- **Exported:** `true` (required for launcher)
+- **Intent filter:** MAIN/LAUNCHER (shows in app drawer)
+
+## Quick Reference
+
+### Common ADB Commands
+
+```bash
+# List connected devices
+adb devices
+
+# Install APK
+adb install <path-to-apk>
+
+# Reinstall APK (keep data)
+adb install -r <path-to-apk>
+
+# Launch app
+adb shell am start -n com.teamtech.techsales/.MainActivity
+
+# Stop app
+adb shell am force-stop com.teamtech.techsales
+
+# Uninstall app
+adb uninstall com.teamtech.techsales
+
+# View logs
+adb logcat
+
+# Clear app data
+adb shell pm clear com.teamtech.techsales
+```
+
+### Gradle Run Tasks
+
+```bash
+# Build and install debug
+./gradlew installDebug
+
+# Build and install release
+./gradlew installRelease
+
+# Uninstall debug
+./gradlew uninstallDebug
+
+# Uninstall release
+./gradlew uninstallRelease
+```
+
+## Troubleshooting
+
+### Device Not Recognized
+
+1. Check USB cable and connection
+2. Enable USB debugging on device
+3. Authorize computer on device
+4. Restart ADB server:
+   ```bash
+   adb kill-server
+   adb start-server
+   ```
+
+### Installation Failed
+
+```bash
+# Uninstall existing version first
+adb uninstall com.teamtech.techsales
+
+# Then reinstall
+./gradlew installDebug
+```
+
+### App Crashes on Launch
+
+Check logs for errors:
+
+```bash
+adb logcat | grep AndroidRuntime
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Testing" icon="flask" href="/development/testing">
+    Run tests to verify functionality
+  </Card>
+  <Card title="Building" icon="hammer" href="/development/building">
+    Learn about build variants
+  </Card>
+</CardGroup>

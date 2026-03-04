@@ -1,0 +1,352 @@
+---
+title: App Distribution
+description: Distribute TechSales Android to users via Google Play Store and alternative channels
+---
+
+## Overview
+
+Once you've built and signed your release APK or AAB, you can distribute TechSales to users. This guide covers Google Play Store distribution and alternative distribution methods.
+
+## Google Play Store Distribution
+
+The primary distribution channel for Android apps is the Google Play Store, which provides automatic updates, security scanning, and global reach.
+
+### Prerequisites
+
+<Steps>
+  <Step title="Developer Account">
+    Create a Google Play Developer account:
+    - Visit [Google Play Console](https://play.google.com/console)
+    - Pay one-time $25 registration fee
+    - Complete account verification
+  </Step>
+
+  <Step title="Create Application">
+    In Google Play Console:
+    - Create new application
+    - Select default language
+    - Enter app title: "TechSales"
+    - Specify app or game category
+  </Step>
+
+  <Step title="Complete Store Listing">
+    Provide required information:
+    - App description (short and full)
+    - Screenshots (minimum 2, various device types)
+    - App icon (512x512 PNG)
+    - Feature graphic (1024x500)
+    - Privacy policy URL
+  </Step>
+</Steps>
+
+## App Requirements
+
+### Target SDK Requirements
+
+TechSales currently targets Android 14 (API level 36):
+
+```kotlin
+defaultConfig {
+    applicationId = "com.teamtech.techsales"
+    minSdk = 29  // Android 10+
+    targetSdk = 36  // Android 14
+    versionCode = 1
+    versionName = "1.0"
+}
+```
+
+<Info>
+Google Play requires new apps to target recent Android versions. TechSales targets SDK 36, meeting current requirements.
+</Info>
+
+### Permission Review
+
+Review permissions declared in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+```
+
+<Warning>
+Sensitive permissions (location, camera, storage) require declaration and usage justification in Play Console.
+</Warning>
+
+### Content Rating
+
+Complete the content rating questionnaire:
+- Answer questions about app content
+- Receive ratings for different regions (ESRB, PEGI, etc.)
+- Required before publishing
+
+### Data Safety
+
+Declare data collection and sharing practices:
+- What data is collected
+- How data is used
+- Whether data is shared with third parties
+- Security practices
+
+## Version Management
+
+### Version Code
+
+The `versionCode` is an integer that must increase with each release:
+
+```kotlin
+versionCode = 1  // Current version
+```
+
+For the next update:
+```kotlin
+versionCode = 2  // Incremented
+```
+
+<Info>
+Google Play uses `versionCode` to determine which version is newer. Users can only update to higher version codes.
+</Info>
+
+### Version Name
+
+The `versionName` is a user-visible string:
+
+```kotlin
+versionName = "1.0"  // Current version
+```
+
+Common versioning schemes:
+- **Semantic:** `"1.0.0"` → `"1.1.0"` → `"2.0.0"`
+- **Date-based:** `"2026.03.01"`
+- **Build number:** `"1.0 (2026-03-04)"`
+
+### Updating Versions
+
+Before each release, update `app/build.gradle.kts`:
+
+```kotlin
+defaultConfig {
+    versionCode = 2  // Increment this
+    versionName = "1.1"  // Update this
+}
+```
+
+## Upload Release
+
+<Steps>
+  <Step title="Build Signed AAB">
+    Generate a signed Android App Bundle:
+    
+    ```bash
+    ./gradlew bundleRelease
+    ```
+    
+    Output: `app/build/outputs/bundle/release/app-release.aab`
+  </Step>
+
+  <Step title="Create Release in Play Console">
+    - Navigate to Production > Releases
+    - Click "Create new release"
+    - Upload `app-release.aab`
+    - Google Play validates the bundle
+  </Step>
+
+  <Step title="Add Release Notes">
+    Describe what's new in this version:
+    
+    ```
+    Version 1.0 - Initial Release
+    - Customer management
+    - Product catalog
+    - Sales tracking
+    - Offline support
+    ```
+  </Step>
+
+  <Step title="Review and Roll Out">
+    - Review release summary
+    - Choose rollout percentage (start with 10-20%)
+    - Click "Start rollout to Production"
+  </Step>
+</Steps>
+
+## Release Tracks
+
+Google Play provides multiple release tracks:
+
+### Internal Testing
+- **Purpose:** Quick testing with small team
+- **Review:** No review required
+- **Users:** Up to 100 testers
+- **Updates:** Available within minutes
+
+### Closed Testing
+- **Purpose:** Beta testing with selected users
+- **Review:** Minimal review
+- **Users:** Custom email lists or Google Groups
+- **Feedback:** Testers can provide feedback
+
+### Open Testing
+- **Purpose:** Public beta
+- **Review:** Standard review
+- **Users:** Anyone can join
+- **Distribution:** Optional Play Store listing
+
+### Production
+- **Purpose:** General availability
+- **Review:** Full review (typically 1-3 days)
+- **Users:** All users
+- **Staged rollout:** 5%, 10%, 20%, 50%, 100%
+
+<Note>
+Start with Internal Testing to validate builds, then progress to Closed Testing, Open Testing, and finally Production.
+</Note>
+
+## Alternative Distribution Methods
+
+### Direct APK Distribution
+
+Distribute APK files directly to users:
+
+1. Build signed APK:
+   ```bash
+   ./gradlew assembleRelease
+   ```
+
+2. Share `app-release.apk` via:
+   - Email
+   - Cloud storage (Dropbox, Google Drive)
+   - Company website
+
+<Warning>
+Users must enable "Install from unknown sources" to install APKs from outside the Play Store.
+</Warning>
+
+### Enterprise Distribution
+
+For corporate deployments:
+
+- **Google Play Managed Private Apps:** Distribute internally via Play Store
+- **MDM Solutions:** Use Mobile Device Management (Intune, VMware Workspace ONE)
+- **Company Portal:** Host APKs on internal servers
+
+### Alternative App Stores
+
+Distribute through third-party stores:
+- **Amazon Appstore**
+- **Samsung Galaxy Store**
+- **Huawei AppGallery**
+- **F-Droid** (open-source apps)
+
+## Update Strategies
+
+### In-App Updates
+
+Implement Google Play In-App Updates API:
+
+```kotlin
+// Check for updates
+val appUpdateManager = AppUpdateManagerFactory.create(context)
+val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+
+appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+    if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+        // Update available - prompt user
+    }
+}
+```
+
+**Update modes:**
+- **Immediate:** Forces update before app continues
+- **Flexible:** Downloads in background, applies when convenient
+
+### Staged Rollouts
+
+Gradually release updates:
+
+1. Start with 10% of users
+2. Monitor crash reports and ratings
+3. Increase to 50% after 24-48 hours
+4. Full rollout (100%) after validation
+
+### Emergency Updates
+
+For critical bug fixes:
+- Halt current rollout if needed
+- Upload patched version with incremented `versionCode`
+- Expedite review by contacting Play Console support
+- Roll out at 100% immediately
+
+## Version Compatibility
+
+Current TechSales compatibility:
+
+```kotlin
+minSdk = 29  // Supports Android 10 and above
+targetSdk = 36  // Optimized for Android 14
+```
+
+**Device coverage:**
+- Android 10+: ~95% of active devices
+- Excludes: Android 9 (Pie) and earlier
+
+<Info>
+Monitor device compatibility in Play Console Analytics to inform future `minSdk` decisions.
+</Info>
+
+## Post-Launch Monitoring
+
+### Play Console Metrics
+
+Track key metrics:
+- **Installs:** Total and active device installs
+- **Ratings:** Average rating and review count
+- **Crashes:** ANR rate and crash rate
+- **Retention:** D1, D7, D30 retention rates
+
+### Pre-Launch Report
+
+Google automatically tests your app:
+- Tests on multiple devices
+- Checks for crashes
+- Identifies accessibility issues
+- Security vulnerability scan
+
+### Release Management
+
+Best practices:
+- Release updates regularly (bi-weekly or monthly)
+- Include release notes with each version
+- Test on Internal track before Production
+- Monitor first 24 hours closely
+- Respond to user reviews
+
+## Distribution Checklist
+
+<Steps>
+  <Step title="Pre-Release">
+    - ✓ Version code incremented
+    - ✓ Version name updated
+    - ✓ APK/AAB signed with release key
+    - ✓ ProGuard/R8 tested (if enabled)
+    - ✓ All features tested on target devices
+  </Step>
+
+  <Step title="Play Console">
+    - ✓ Store listing complete
+    - ✓ Screenshots and graphics uploaded
+    - ✓ Content rating obtained
+    - ✓ Data safety form completed
+    - ✓ Privacy policy URL provided
+  </Step>
+
+  <Step title="Post-Release">
+    - ✓ Monitor crash reports
+    - ✓ Track user reviews
+    - ✓ Check analytics for anomalies
+    - ✓ Prepare next version
+  </Step>
+</Steps>
+
+<Note>
+For signing configuration details, see [App Signing](/deployment/signing). For build instructions, see [Release Builds](/deployment/release-builds).
+</Note>

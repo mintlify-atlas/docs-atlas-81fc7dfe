@@ -1,0 +1,179 @@
+---
+title: Project Structure
+description: Understanding the TechSales Android project directory structure and package organization
+---
+
+The TechSales Android application follows the standard Android project structure with Gradle Kotlin DSL build configuration.
+
+## Root Directory Structure
+
+The project is organized as follows:
+
+```
+TechSales/
+├── app/                        # Main application module
+│   ├── src/                    # Source files
+│   ├── build.gradle.kts        # App-level build configuration
+│   └── proguard-rules.pro      # ProGuard obfuscation rules
+├── gradle/                     # Gradle wrapper files
+│   └── wrapper/
+├── build.gradle.kts            # Project-level build configuration
+├── settings.gradle.kts         # Project settings
+├── gradle.properties           # Gradle properties
+├── gradlew                     # Gradle wrapper script (Unix)
+└── gradlew.bat                 # Gradle wrapper script (Windows)
+```
+
+## App Module Structure
+
+The `app/` directory contains the main application code:
+
+```
+app/
+├── src/
+│   ├── main/
+│   │   ├── java/com/teamtech/techsales/
+│   │   │   └── MainActivity.java
+│   │   ├── res/
+│   │   │   ├── drawable/           # Images and drawables
+│   │   │   ├── layout/             # XML layouts
+│   │   │   ├── mipmap-*/           # App icons (various densities)
+│   │   │   ├── values/             # Strings, colors, themes
+│   │   │   ├── values-night/       # Dark theme resources
+│   │   │   └── xml/                # XML configuration files
+│   │   └── AndroidManifest.xml
+│   ├── androidTest/
+│   │   └── java/com/teamtech/techsales/
+│   │       └── ExampleInstrumentedTest.java
+│   └── test/
+│       └── java/com/teamtech/techsales/
+│           └── ExampleUnitTest.java
+├── build.gradle.kts
+└── proguard-rules.pro
+```
+
+## Key Directories
+
+### Source Code (`app/src/main/java`)
+
+The main application source code is located in the Java package structure:
+
+```
+app/src/main/java/com/teamtech/techsales/
+```
+
+**Package name:** `com.teamtech.techsales`
+
+This directory contains all Java source files for the application, including:
+- `MainActivity.java` - The main entry point activity
+
+### Resources (`app/src/main/res`)
+
+Android resources are organized by type:
+
+- **drawable/** - Vector graphics, images, and drawable resources
+- **layout/** - XML layout files defining UI screens
+- **mipmap-\*/** - Launcher icons at different densities (hdpi, mdpi, xhdpi, xxhdpi, xxxhdpi, anydpi)
+- **values/** - String resources, colors, dimensions, styles
+- **values-night/** - Dark theme overrides
+- **xml/** - XML configuration files (backup rules, data extraction rules)
+
+### AndroidManifest.xml
+
+Location: `app/src/main/AndroidManifest.xml`
+
+The manifest file defines essential application information:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.TechSales">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
+
+### Test Directories
+
+<Note>
+TechSales maintains separate directories for unit tests and instrumented tests.
+</Note>
+
+**Unit Tests:** `app/src/test/java/com/teamtech/techsales/`
+- Contains JUnit tests that run on the JVM
+- Example: `ExampleUnitTest.java`
+
+**Instrumented Tests:** `app/src/androidTest/java/com/teamtech/techsales/`
+- Contains tests that run on Android devices or emulators
+- Example: `ExampleInstrumentedTest.java`
+
+## Package Structure
+
+The application uses the reverse domain name convention:
+
+```
+com.teamtech.techsales
+```
+
+- **com.teamtech** - Organization identifier
+- **techsales** - Application name
+
+This package name is defined in:
+- `app/build.gradle.kts` as `namespace` and `applicationId`
+- `AndroidManifest.xml` (implicitly through the namespace)
+- All Java source files as the package declaration
+
+## Build Configuration Files
+
+### Project-level build.gradle.kts
+
+Location: `build.gradle.kts`
+
+Configures plugins and settings for all modules:
+
+```kotlin
+plugins {
+    alias(libs.plugins.android.application) apply false
+}
+```
+
+### App-level build.gradle.kts
+
+Location: `app/build.gradle.kts`
+
+Defines app-specific build configuration, dependencies, and compile options. See the [Building](/development/building) page for details.
+
+### Gradle Properties
+
+Location: `gradle.properties`
+
+Contains Gradle configuration settings and project-wide properties.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Building" icon="hammer" href="/development/building">
+    Learn how to build the TechSales app
+  </Card>
+  <Card title="Running" icon="play" href="/development/running">
+    Run the app on devices and emulators
+  </Card>
+</CardGroup>

@@ -1,0 +1,285 @@
+---
+title: Building the App
+description: How to build TechSales Android using Gradle and understand build variants
+---
+
+TechSales uses Gradle with Kotlin DSL for building the Android application. This guide covers building from the command line and understanding build configurations.
+
+## Prerequisites
+
+Before building, ensure you have:
+- Android SDK installed
+- Java Development Kit (JDK) 11 or higher
+- Environment variables set (ANDROID_HOME)
+
+## Building with Gradle
+
+### Basic Build Command
+
+To build the app from the command line:
+
+```bash
+./gradlew build
+```
+
+This command compiles the source code, processes resources, and generates APK files for all build variants.
+
+### Build Specific Variants
+
+<Steps>
+  <Step title="Debug Build">
+    Build the debug variant (includes debugging symbols, not optimized):
+    
+    ```bash
+    ./gradlew assembleDebug
+    ```
+    
+    Output location: `app/build/outputs/apk/debug/app-debug.apk`
+  </Step>
+  
+  <Step title="Release Build">
+    Build the release variant (optimized, ready for distribution):
+    
+    ```bash
+    ./gradlew assembleRelease
+    ```
+    
+    Output location: `app/build/outputs/apk/release/app-release-unsigned.apk`
+  </Step>
+</Steps>
+
+### Clean Build
+
+To remove all build artifacts and start fresh:
+
+```bash
+./gradlew clean
+```
+
+To clean and rebuild:
+
+```bash
+./gradlew clean build
+```
+
+## Build Configuration
+
+The build configuration is defined in `app/build.gradle.kts`:
+
+```kotlin
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    namespace = "com.teamtech.techsales"
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
+
+    defaultConfig {
+        applicationId = "com.teamtech.techsales"
+        minSdk = 29
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+```
+
+### Key Configuration Values
+
+- **Application ID:** `com.teamtech.techsales`
+- **Namespace:** `com.teamtech.techsales`
+- **Compile SDK:** 36 (Android API level 36)
+- **Min SDK:** 29 (Android 10)
+- **Target SDK:** 36
+- **Version Code:** 1
+- **Version Name:** 1.0
+- **Java Version:** 11
+
+## Build Variants
+
+TechSales has two build types configured:
+
+### Debug Variant
+
+- **Purpose:** Development and testing
+- **Minification:** Disabled
+- **Debugging:** Enabled
+- **Signing:** Uses debug keystore automatically
+- **Output:** `app-debug.apk`
+
+### Release Variant
+
+- **Purpose:** Production distribution
+- **Minification:** Currently disabled (`isMinifyEnabled = false`)
+- **ProGuard:** Configured but not enabled
+- **Signing:** Requires release keystore configuration
+- **Output:** `app-release-unsigned.apk`
+
+<Note>
+Minification is currently disabled for release builds. To enable code shrinking and obfuscation, set `isMinifyEnabled = true` in the release build type.
+</Note>
+
+## ProGuard Configuration
+
+ProGuard rules are defined in `app/proguard-rules.pro`. While minification is currently disabled, the configuration file is ready for use:
+
+```pro
+# Add project specific ProGuard rules here.
+# You can control the set of applied configuration files using the
+# proguardFiles setting in build.gradle.
+
+# If your project uses WebView with JS, uncomment the following
+# and specify the fully qualified class name to the JavaScript interface
+# class:
+#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
+#   public *;
+#}
+
+# Uncomment this to preserve the line number information for
+# debugging stack traces.
+#-keepattributes SourceFile,LineNumberTable
+
+# If you keep the line number information, uncomment this to
+# hide the original source file name.
+#-renamesourcefileattribute SourceFile
+```
+
+The release build also uses the default optimized ProGuard configuration:
+- `proguard-android-optimize.txt` (from Android SDK)
+- `proguard-rules.pro` (project-specific rules)
+
+### Enabling ProGuard
+
+To enable code shrinking and obfuscation:
+
+1. Edit `app/build.gradle.kts`
+2. Change `isMinifyEnabled = false` to `isMinifyEnabled = true`
+3. Add any necessary keep rules to `proguard-rules.pro`
+4. Rebuild the release variant
+
+## Build Output Locations
+
+After building, artifacts are generated in the following locations:
+
+### APK Files
+
+```
+app/build/outputs/apk/
+├── debug/
+│   └── app-debug.apk
+└── release/
+    └── app-release-unsigned.apk
+```
+
+### Build Intermediates
+
+```
+app/build/intermediates/
+```
+
+Contains intermediate build files (compiled classes, processed resources, etc.)
+
+### Build Logs
+
+```
+app/build/outputs/logs/
+```
+
+## Gradle Tasks
+
+Useful Gradle tasks for building:
+
+```bash
+# List all available tasks
+./gradlew tasks
+
+# List app module tasks
+./gradlew app:tasks
+
+# Build and install debug APK on connected device
+./gradlew installDebug
+
+# Build and install release APK
+./gradlew installRelease
+
+# Generate build reports
+./gradlew assembleDebug --scan
+```
+
+## Build Performance
+
+### Gradle Daemon
+
+The Gradle daemon improves build performance by keeping build components in memory. It's enabled by default.
+
+### Parallel Builds
+
+Gradle can build independent modules in parallel. Check `gradle.properties` for parallel execution settings.
+
+### Build Cache
+
+Gradle's build cache reuses outputs from previous builds:
+
+```bash
+# Build with build cache
+./gradlew build --build-cache
+```
+
+## Troubleshooting
+
+### Clean Build
+
+If you encounter build issues, try cleaning:
+
+```bash
+./gradlew clean build
+```
+
+### Gradle Wrapper Update
+
+Ensure you're using the correct Gradle version:
+
+```bash
+./gradlew wrapper --gradle-version=latest
+```
+
+### Dependency Issues
+
+Refresh dependencies:
+
+```bash
+./gradlew build --refresh-dependencies
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Running" icon="play" href="/development/running">
+    Learn how to run the built APK
+  </Card>
+  <Card title="Testing" icon="flask" href="/development/testing">
+    Run tests before building release
+  </Card>
+</CardGroup>

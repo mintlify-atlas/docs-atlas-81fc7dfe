@@ -1,0 +1,479 @@
+---
+title: 'Layouts'
+description: 'Documentation of activity_main.xml and ConstraintLayout implementation'
+---
+
+# Layouts
+
+The TechSales Android app uses ConstraintLayout as the foundation for building flexible, performant user interfaces. This page documents the `activity_main.xml` layout file.
+
+## activity_main.xml
+
+Location: `~/workspace/source/TechSales/app/src/main/res/layout/activity_main.xml`
+
+### Full XML Source
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+## Layout Structure
+
+### Root Element: ConstraintLayout
+
+```xml
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+```
+
+<Tabs>
+  <Tab title="XML Namespaces">
+    ```xml
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    ```
+    
+    **android:** - Standard Android attributes (layout_width, id, text, etc.)
+    
+    **app:** - Custom attributes, particularly ConstraintLayout constraints
+    
+    **tools:** - Design-time attributes (not compiled into APK)
+  </Tab>
+  <Tab title="Layout Attributes">
+    ```xml
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    ```
+    
+    **android:id="@+id/main"** - Unique identifier used in MainActivity.java:18 for window insets handling
+    
+    **match_parent** - Fills the entire available space (full screen)
+  </Tab>
+  <Tab title="Tools Attributes">
+    ```xml
+    tools:context=".MainActivity"
+    ```
+    
+    Links this layout to MainActivity for Android Studio features:
+    - Code completion
+    - Navigation between XML and Java
+    - Preview rendering
+  </Tab>
+</Tabs>
+
+### Why ConstraintLayout?
+
+<Accordion title="Performance">
+ConstraintLayout uses a flat view hierarchy, reducing the number of nested layouts. This improves rendering performance compared to nested LinearLayouts or RelativeLayouts.
+
+**Traditional Approach (Nested Layouts):**
+```
+LinearLayout
+└── LinearLayout
+    └── RelativeLayout
+        └── View
+```
+
+**ConstraintLayout Approach:**
+```
+ConstraintLayout
+└── View (directly constrained)
+```
+</Accordion>
+
+<Accordion title="Flexibility">
+Allows complex layouts without deep view hierarchies. Each view can be positioned relative to:
+- Parent container
+- Other views
+- Guidelines
+- Barriers
+- Chains
+</Accordion>
+
+<Accordion title="Responsive Design">
+Built-in support for:
+- Aspect ratios
+- Percentage-based sizing
+- Circular positioning
+- Dynamic constraints
+</Accordion>
+
+## Child Views
+
+### TextView Component
+
+```xml
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Hello World!"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+```
+
+#### Basic Attributes
+
+<Note>
+This TextView is perfectly centered in the screen using ConstraintLayout's constraint system.
+</Note>
+
+| Attribute | Value | Description |
+|-----------|-------|-------------|
+| `android:layout_width` | `wrap_content` | Width adjusts to content size |
+| `android:layout_height` | `wrap_content` | Height adjusts to content size |
+| `android:text` | `"Hello World!"` | Displayed text content |
+
+#### Constraint Attributes
+
+The TextView uses four constraints to achieve perfect centering:
+
+<Tabs>
+  <Tab title="Visual Representation">
+    ```
+                    Parent Top
+                         ↓
+                    [TextView]
+                         ↑
+    Parent Start ←  Centered  → Parent End
+                         ↓
+                    [TextView]
+                         ↑
+                   Parent Bottom
+    ```
+    
+    All four constraints create equal pull in all directions, centering the view.
+  </Tab>
+  <Tab title="Top Constraint">
+    ```xml
+    app:layout_constraintTop_toTopOf="parent"
+    ```
+    
+    Constrains the **top edge** of the TextView to the **top edge** of the parent ConstraintLayout.
+  </Tab>
+  <Tab title="Bottom Constraint">
+    ```xml
+    app:layout_constraintBottom_toBottomOf="parent"
+    ```
+    
+    Constrains the **bottom edge** of the TextView to the **bottom edge** of the parent ConstraintLayout.
+    
+    Combined with top constraint, this centers vertically.
+  </Tab>
+  <Tab title="Start Constraint">
+    ```xml
+    app:layout_constraintStart_toStartOf="parent"
+    ```
+    
+    Constrains the **start edge** (left in LTR, right in RTL) to the parent's start edge.
+  </Tab>
+  <Tab title="End Constraint">
+    ```xml
+    app:layout_constraintEnd_toEndOf="parent"
+    ```
+    
+    Constrains the **end edge** (right in LTR, left in RTL) to the parent's end edge.
+    
+    Combined with start constraint, this centers horizontally.
+  </Tab>
+</Tabs>
+
+### Centering Logic
+
+When a view has opposing constraints (top + bottom, start + end) with no bias, ConstraintLayout automatically centers the view:
+
+```
+Top Constraint + Bottom Constraint = Vertical Centering
+Start Constraint + End Constraint = Horizontal Centering
+```
+
+<Accordion title="Centering with Bias">
+You can adjust the position using bias attributes:
+
+```xml
+<TextView
+    ...
+    app:layout_constraintHorizontal_bias="0.3"
+    app:layout_constraintVertical_bias="0.7"
+    ... />
+```
+
+- **0.0** = Start/Top
+- **0.5** = Center (default)
+- **1.0** = End/Bottom
+</Accordion>
+
+## ConstraintLayout Patterns
+
+### Common Constraint Types
+
+<Tabs>
+  <Tab title="Edge to Edge">
+    ```xml
+    app:layout_constraintTop_toTopOf="@id/other_view"
+    app:layout_constraintBottom_toBottomOf="@id/other_view"
+    ```
+    
+    Aligns edges of two views together.
+  </Tab>
+  <Tab title="Edge to Opposite Edge">
+    ```xml
+    app:layout_constraintTop_toBottomOf="@id/header"
+    ```
+    
+    Positions one view below/beside another.
+  </Tab>
+  <Tab title="Parent Constraints">
+    ```xml
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    ```
+    
+    Constrains to the parent container.
+  </Tab>
+  <Tab title="Guidelines">
+    ```xml
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+    ```
+    
+    Invisible helper for alignment.
+  </Tab>
+</Tabs>
+
+## Material Design Components
+
+While the current layout uses a basic TextView, the app is configured to support Material Design 3 components:
+
+<Accordion title="Available Material Components">
+- **MaterialButton**: Enhanced buttons with elevation and ripple effects
+- **MaterialCardView**: Cards with rounded corners and elevation
+- **TextInputLayout**: Text fields with floating labels
+- **MaterialToolbar**: App bars with Material Design styling
+- **BottomNavigationView**: Bottom navigation bars
+- **FloatingActionButton**: FAB with elevation and animations
+- **Chip**: Compact elements representing attributes, text, entities, or actions
+</Accordion>
+
+### Example: Adding Material Components
+
+<Tabs>
+  <Tab title="MaterialButton">
+    ```xml
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Click Me"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    ```
+  </Tab>
+  <Tab title="MaterialCardView">
+    ```xml
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="8dp"
+        app:layout_constraintTop_toTopOf="parent">
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="Card Content" />
+            
+    </com.google.android.material.card.MaterialCardView>
+    ```
+  </Tab>
+  <Tab title="FloatingActionButton">
+    ```xml
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:contentDescription="Add"
+        android:src="@drawable/ic_add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+    ```
+  </Tab>
+</Tabs>
+
+## Layout Best Practices
+
+### 1. Use Appropriate Sizing
+
+```xml
+<!-- Good: wrap_content for text -->
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+
+<!-- Good: 0dp for constraint-based sizing -->
+<TextView
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent" />
+
+<!-- Avoid: Fixed dp values for variable content -->
+<TextView
+    android:layout_width="200dp"
+    android:layout_height="50dp" />
+```
+
+### 2. Provide Sufficient Constraints
+
+<Note>
+Every view in ConstraintLayout needs constraints for both horizontal and vertical positioning. Missing constraints will cause views to jump to (0, 0) at runtime.
+</Note>
+
+```xml
+<!-- Minimum required constraints -->
+<View
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:layout_constraintTop_toTopOf="parent"    <!-- Vertical -->
+    app:layout_constraintStart_toStartOf="parent" <!-- Horizontal -->
+    />
+```
+
+### 3. Use RTL-Aware Attributes
+
+```xml
+<!-- Good: RTL-aware -->
+app:layout_constraintStart_toStartOf="parent"
+app:layout_constraintEnd_toEndOf="parent"
+
+<!-- Avoid: LTR-only -->
+app:layout_constraintLeft_toLeftOf="parent"
+app:layout_constraintRight_toRightOf="parent"
+```
+
+### 4. Leverage 0dp for Match Constraint
+
+```xml
+<!-- Fill remaining space between constraints -->
+<TextView
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent" />
+```
+
+## EdgeToEdge Considerations
+
+Since the app uses EdgeToEdge, this layout receives window insets padding from MainActivity:
+
+```java
+// From MainActivity.java:18-21
+ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+    return insets;
+});
+```
+
+The ConstraintLayout's `android:id="@+id/main"` connects it to this insets handling code.
+
+### Visual Effect
+
+```
+[Status Bar Area]
+  ↓ Padding applied
+┌─────────────────┐
+│                 │
+│  Hello World!   │  ← Content with safe padding
+│                 │
+└─────────────────┘
+  ↑ Padding applied
+[Navigation Bar Area]
+```
+
+## Expanding the Layout
+
+When adding more views, maintain the ConstraintLayout structure:
+
+```xml
+<androidx.constraintlayout.widget.ConstraintLayout ...>
+    
+    <!-- Header -->
+    <TextView
+        android:id="@+id/header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="TechSales"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+    
+    <!-- Content -->
+    <TextView
+        android:id="@+id/content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="Hello World!"
+        app:layout_constraintTop_toBottomOf="@id/header"
+        app:layout_constraintBottom_toTopOf="@id/footer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+    
+    <!-- Footer -->
+    <TextView
+        android:id="@+id/footer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Footer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+        
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="MainActivity" icon="mobile" href="./main-activity">
+    See how this layout is inflated and used
+  </Card>
+  <Card title="Overview" icon="book" href="./overview">
+    Component architecture overview
+  </Card>
+</CardGroup>

@@ -1,0 +1,476 @@
+---
+title: 'Dependencies'
+description: 'Managing dependencies in TechSales Android using version catalogs'
+---
+
+## Overview
+
+TechSales uses Gradle's version catalog feature for centralized dependency management. All dependencies are declared in `gradle/libs.versions.toml` and referenced type-safely in build files.
+
+## App Dependencies
+
+The application module declares its dependencies in `app/build.gradle.kts`:
+
+```kotlin app/build.gradle.kts
+dependencies {
+    implementation(libs.appcompat)
+    implementation(libs.material)
+    implementation(libs.activity)
+    implementation(libs.constraintlayout)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
+}
+```
+
+## Core Dependencies
+
+### AndroidX AppCompat
+
+<ParamField path="libs.appcompat" type="Library" required>
+  Provides backward-compatible versions of Android framework APIs.
+  
+  **Version:** 1.6.1  
+  **Group:** androidx.appcompat  
+  **Artifact:** appcompat
+</ParamField>
+
+```kotlin
+implementation(libs.appcompat)
+```
+
+**Key Features:**
+- Material Design components
+- ActionBar and Toolbar support
+- AppCompatActivity and theme support
+- Vector drawables on older Android versions
+
+<Note>
+AppCompat is essential for maintaining consistency across Android versions. It backports newer UI components to older devices.
+</Note>
+
+### Material Design Components
+
+<ParamField path="libs.material" type="Library" required>
+  Google's Material Design component library for Android.
+  
+  **Version:** 1.10.0  
+  **Group:** com.google.android.material  
+  **Artifact:** material
+</ParamField>
+
+```kotlin
+implementation(libs.material)
+```
+
+**Key Features:**
+- Material Design 3 components
+- Bottom sheets, navigation drawers, cards
+- Floating action buttons (FAB)
+- Text fields and input layouts
+- Snackbars and dialogs
+
+### AndroidX Activity
+
+<ParamField path="libs.activity" type="Library" required>
+  Modern activity handling with result contracts and ViewModels.
+  
+  **Version:** 1.8.0  
+  **Group:** androidx.activity  
+  **Artifact:** activity
+</ParamField>
+
+```kotlin
+implementation(libs.activity)
+```
+
+**Key Features:**
+- Activity Result API
+- ComponentActivity base class
+- OnBackPressedDispatcher
+- Integration with ViewModels and Lifecycle
+
+### ConstraintLayout
+
+<ParamField path="libs.constraintlayout" type="Library" required>
+  Flexible layout manager for creating responsive UIs.
+  
+  **Version:** 2.1.4  
+  **Group:** androidx.constraintlayout  
+  **Artifact:** constraintlayout
+</ParamField>
+
+```kotlin
+implementation(libs.constraintlayout)
+```
+
+**Key Features:**
+- Flat view hierarchy for better performance
+- Responsive layouts without nested ViewGroups
+- Constraint-based positioning
+- Guidelines, barriers, and chains
+
+<Note>
+ConstraintLayout is the recommended layout manager for modern Android apps. It reduces layout nesting and improves performance.
+</Note>
+
+## Test Dependencies
+
+### JUnit 4
+
+<ParamField path="libs.junit" type="Library">
+  Standard unit testing framework for Java/Kotlin.
+  
+  **Version:** 4.13.2  
+  **Group:** junit  
+  **Artifact:** junit  
+  **Configuration:** testImplementation
+</ParamField>
+
+```kotlin
+testImplementation(libs.junit)
+```
+
+**Use Cases:**
+- Unit tests for business logic
+- ViewModel testing
+- Repository and data source tests
+- Utility function tests
+
+### AndroidX JUnit Extension
+
+<ParamField path="libs.ext.junit" type="Library">
+  AndroidX test runner with JUnit 4 integration.
+  
+  **Version:** 1.1.5  
+  **Group:** androidx.test.ext  
+  **Artifact:** junit  
+  **Configuration:** androidTestImplementation
+</ParamField>
+
+```kotlin
+androidTestImplementation(libs.ext.junit)
+```
+
+**Use Cases:**
+- Instrumented tests that require Android context
+- Activity and Fragment testing
+- Integration tests
+
+### Espresso
+
+<ParamField path="libs.espresso.core" type="Library">
+  UI testing framework for Android.
+  
+  **Version:** 3.5.1  
+  **Group:** androidx.test.espresso  
+  **Artifact:** espresso-core  
+  **Configuration:** androidTestImplementation
+</ParamField>
+
+```kotlin
+androidTestImplementation(libs.espresso.core)
+```
+
+**Use Cases:**
+- UI interaction testing
+- View matching and assertions
+- Automated user flow testing
+
+<Note>
+Espresso tests run on real devices or emulators and can interact with your app's UI like a real user would.
+</Note>
+
+## Version Catalog Structure
+
+The version catalog is defined in `gradle/libs.versions.toml`:
+
+```toml gradle/libs.versions.toml
+[versions]
+agp = "9.0.1"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+appcompat = "1.6.1"
+material = "1.10.0"
+activity = "1.8.0"
+constraintlayout = "2.1.4"
+
+[libraries]
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+```
+
+### Structure Breakdown
+
+**[versions] Section:**
+- Declares version numbers as variables
+- Referenced using `version.ref` in library declarations
+- Single source of truth for versions
+
+**[libraries] Section:**
+- Declares dependencies with Maven coordinates
+- Format: `{ group = "...", name = "...", version.ref = "..." }`
+- Accessed in build files as `libs.libraryName`
+
+**[plugins] Section:**
+- Declares Gradle plugins
+- Accessed as `libs.plugins.pluginName`
+
+## Dependency Configurations
+
+### Implementation
+
+```kotlin
+implementation(libs.appcompat)
+```
+
+- Used for dependencies required at runtime
+- Not exposed to consumers (in library modules)
+- Faster compilation than `api`
+
+### TestImplementation
+
+```kotlin
+testImplementation(libs.junit)
+```
+
+- Used for unit test dependencies
+- Only available in `test` source set
+- Not included in APK
+
+### AndroidTestImplementation
+
+```kotlin
+androidTestImplementation(libs.espresso.core)
+```
+
+- Used for instrumented test dependencies
+- Only available in `androidTest` source set
+- Not included in production APK
+
+<Note>
+Choose the most restrictive configuration possible. Using `testImplementation` instead of `implementation` for test-only dependencies reduces APK size.
+</Note>
+
+## Adding New Dependencies
+
+### Step 1: Add Version to Catalog
+
+Edit `gradle/libs.versions.toml`:
+
+```toml
+[versions]
+# Existing versions...
+retrofit = "2.9.0"
+
+[libraries]
+# Existing libraries...
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+```
+
+### Step 2: Add to Build File
+
+Edit `app/build.gradle.kts`:
+
+```kotlin
+dependencies {
+    // Existing dependencies...
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+}
+```
+
+### Step 3: Sync Project
+
+Click "Sync Now" in Android Studio or run:
+
+```bash
+./gradlew build
+```
+
+<Note>
+Android Studio provides auto-completion for version catalog entries. Type `libs.` to see available dependencies.
+</Note>
+
+## Updating Dependencies
+
+### Manual Updates
+
+1. Edit version in `gradle/libs.versions.toml`
+2. Sync the project
+3. Test thoroughly
+
+### Checking for Updates
+
+Use the Gradle Versions Plugin:
+
+```kotlin build.gradle.kts
+plugins {
+    id("com.github.ben-manes.versions") version "0.51.0"
+}
+```
+
+Then run:
+
+```bash
+./gradlew dependencyUpdates
+```
+
+<Warning>
+Always test your app after updating dependencies, especially major version updates. Check release notes for breaking changes.
+</Warning>
+
+## Dependency Management Best Practices
+
+### 1. Use Version Catalogs
+
+```kotlin
+// Good - Type-safe and centralized
+implementation(libs.appcompat)
+
+// Avoid - String literals scattered across files
+implementation("androidx.appcompat:appcompat:1.6.1")
+```
+
+### 2. Group Related Versions
+
+```toml
+[versions]
+retrofit = "2.9.0"
+
+[libraries]
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+```
+
+### 3. Use Specific Configurations
+
+```kotlin
+// Good - Minimizes APK size
+testImplementation(libs.junit)
+
+// Avoid - Includes test dependency in production
+implementation(libs.junit)
+```
+
+### 4. Avoid Dynamic Versions
+
+```toml
+# Good - Pinned version
+appcompat = "1.6.1"
+
+# Avoid - Unpredictable builds
+appcompat = "1.6.+"
+appcompat = "latest.release"
+```
+
+### 5. Document Custom Dependencies
+
+Add comments in `libs.versions.toml` for non-standard dependencies:
+
+```toml
+[libraries]
+# Custom analytics SDK from internal repository
+analytics-sdk = { group = "com.company.internal", name = "analytics", version.ref = "analyticsSdk" }
+```
+
+## Viewing Dependency Tree
+
+To see all dependencies and their transitive dependencies:
+
+```bash
+# All configurations
+./gradlew :app:dependencies
+
+# Specific configuration
+./gradlew :app:dependencies --configuration releaseRuntimeClasspath
+```
+
+## Resolving Dependency Conflicts
+
+When multiple dependencies require different versions of the same library:
+
+```kotlin
+dependencies {
+    implementation(libs.appcompat)
+    
+    // Force specific version
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0") {
+            because("standardize Kotlin version across all dependencies")
+        }
+    }
+}
+```
+
+<Warning>
+Forcing dependency versions can lead to compatibility issues. Only use this when necessary and test thoroughly.
+</Warning>
+
+## Common Dependencies to Add
+
+Here are commonly added dependencies for Android apps:
+
+<CodeGroup>
+
+```toml Networking
+[versions]
+retrofit = "2.9.0"
+okhttp = "4.12.0"
+
+[libraries]
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+```
+
+```toml Image Loading
+[versions]
+glide = "4.16.0"
+coil = "2.5.0"
+
+[libraries]
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+```
+
+```toml Dependency Injection
+[versions]
+hilt = "2.50"
+
+[libraries]
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+
+[plugins]
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+```
+
+```toml Room Database
+[versions]
+room = "2.6.1"
+
+[libraries]
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+```
+
+</CodeGroup>
+
+## Related Documentation
+
+- [Gradle Configuration](/configuration/gradle) - Gradle setup and build configuration
+- [Build Types](/configuration/build-types) - Debug and release configurations
+- [Testing](/development/testing) - Writing and running tests
