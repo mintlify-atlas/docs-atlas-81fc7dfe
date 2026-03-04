@@ -1,0 +1,68 @@
+{
+  "projectType": "frontend",
+  "projectName": "TechSales Android",
+  "projectDescription": "A native Android application for technical sales management built with Java and Material Design",
+  "theme": "palm",
+  "primaryColor": "#3DDC84",
+  "lightColor": "#4AE898",
+  "darkColor": "#2CC76F",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "quickstart",
+          "installation"
+        ]
+      },
+      {
+        "group": "Development",
+        "pages": [
+          "development/project-structure",
+          "development/building",
+          "development/running",
+          "development/testing"
+        ]
+      },
+      {
+        "group": "Components",
+        "pages": [
+          "components/overview",
+          "components/main-activity",
+          "components/layouts"
+        ]
+      },
+      {
+        "group": "Configuration",
+        "pages": [
+          "configuration/gradle",
+          "configuration/dependencies",
+          "configuration/build-types"
+        ]
+      },
+      {
+        "group": "Deployment",
+        "pages": [
+          "deployment/release-builds",
+          "deployment/signing",
+          "deployment/distribution"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Native Android application with Material Design",
+    "EdgeToEdge UI with window insets handling",
+    "Modern AndroidX libraries and components",
+    "Gradle Kotlin DSL build configuration",
+    "Java 11 compatibility with Android SDK 36 support"
+  ],
+  "publicApiSurface": [
+    "MainActivity - Main entry point activity",
+    "EdgeToEdge UI implementation",
+    "ConstraintLayout-based layouts",
+    "Material Design theme integration",
+    "AndroidX core libraries"
+  ]
+}
